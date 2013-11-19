@@ -16,6 +16,7 @@ using System.IO;
 
 using Hardcodet.Wpf.TaskbarNotification;
 using System.ComponentModel;
+using System.Collections.ObjectModel;
 
 namespace TimeTrack
 {
@@ -32,11 +33,25 @@ namespace TimeTrack
         private DateTime m_RecordStop;
         private string m_Task;
 
-        private List<string> m_TaskNames = new List<string>();
-        public List<String> TaskNames
+        private ObservableCollection<string> m_TaskNames = new ObservableCollection<string>();
+        public ObservableCollection<String> TaskNames
         {
             get { return m_TaskNames; }
-            set { m_TaskNames = value; }
+            set {
+                m_TaskNames = value;
+                NotifyPropertyChange("TaskNames");
+            }
+        }
+
+        private string m_IconTooltip = "";
+        public string IconTooltip
+        {
+            get { return m_IconTooltip; }
+            set
+            {
+                m_IconTooltip = value;
+                NotifyPropertyChange("IconTooltip");
+            }
         }
 
         protected void NotifyPropertyChange(string prop)
@@ -54,6 +69,11 @@ namespace TimeTrack
             InitializeComponent();
         }
 
+        private void RootWindow_Initialized(object sender, EventArgs e)
+        {
+            IconTooltip = tbTooltipNotRecording.Text;
+        }
+
         public void ToggleRecording()
         {
             if (this.Visibility == System.Windows.Visibility.Visible)
@@ -66,13 +86,13 @@ namespace TimeTrack
             if (m_Recording)
             {
                 TaskbarIcon.IconSource = (ImageSource)FindResource("IcoStop");
-                TaskbarIcon.ToolTip = string.Format("Recording time since {0}. Click to stop", m_RecordStart.ToString("HH:mm"));
                 m_RecordStart = DateTime.Now;
+                IconTooltip = string.Format("Recording time since {0}. Click to stop", m_RecordStart.ToString("HH:mm"));
             }
             else
             {
                 TaskbarIcon.IconSource = (ImageSource)FindResource("IcoRecord");
-                TaskbarIcon.ToolTip = tbTooltipNotRecording.Text;
+                IconTooltip = tbTooltipNotRecording.Text;
                 m_RecordStop = DateTime.Now;
 
                 dtFrom.Text = m_RecordStart.ToString("g");
@@ -86,6 +106,7 @@ namespace TimeTrack
         private void bSave_Click(object sender, RoutedEventArgs e)
         {
             TimeSpan dif = m_RecordStop - m_RecordStart;
+            m_Task = cbTask.Text;
             using (FileStream fs = new FileStream(DATA_FILE_PATH, FileMode.Append))
             using (StreamWriter sw = new StreamWriter(fs))
             {
