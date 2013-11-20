@@ -101,15 +101,13 @@ namespace TimeTrack
             m_Recording = !m_Recording;
             if (m_Recording)
             {
-                TaskbarIcon.IconSource = (ImageSource)FindResource("IcoStop");
                 m_RecordStart = DateTime.Now;
-                IconTooltip = string.Format("Recording time since {0}. Click to stop", m_RecordStart.ToString("HH:mm"));
+                SwitchIconToRecording();
             }
             else
             {
                 // Stop recording
-                TaskbarIcon.IconSource = (ImageSource)FindResource("IcoRecord");
-                IconTooltip = tbTooltipNotRecording.Text;
+                SwitchIconToStopped();
                 m_RecordStop = DateTime.Now;
 
                 // Update the date of "today" if it changed since the last task
@@ -169,6 +167,13 @@ namespace TimeTrack
             if (MessageBox.Show("Are you sure that you want to ignore this time interval?", "Ignore time interval", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.No)
                 return;
 
+            this.Visibility = System.Windows.Visibility.Hidden;
+        }
+
+        private void bContinue_Click(object sender, RoutedEventArgs e)
+        {
+            m_Recording = true;
+            SwitchIconToRecording();
             this.Visibility = System.Windows.Visibility.Hidden;
         }
 
@@ -246,6 +251,18 @@ namespace TimeTrack
             }
             catch (IOException)
             { }
+        }
+
+        private void SwitchIconToRecording()
+        {
+            TaskbarIcon.IconSource = (ImageSource)FindResource("IcoStop");
+            IconTooltip = string.Format("Recording time since {0}. Click to stop", m_RecordStart.ToString("HH:mm"));
+        }
+
+        private void SwitchIconToStopped()
+        {
+            TaskbarIcon.IconSource = (ImageSource)FindResource("IcoRecord");
+            IconTooltip = tbTooltipNotRecording.Text;
         }
     }
 }

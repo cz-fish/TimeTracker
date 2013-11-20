@@ -50,9 +50,10 @@
         <TextBox Grid.Column="1" Grid.Row="0" Name="dtFrom" Text="0:00" Margin="5,10,10,0" TextChanged="dtFrom_TextChanged"/>
         <TextBox Grid.Column="1" Grid.Row="1" Name="dtTo" Text="0:00" Margin="5,5,10,0" TextChanged="dtTo_TextChanged"/>
         <ComboBox Grid.Column="1" Grid.Row="2" Name="cbTask" IsEditable="True" ItemsSource="{Binding ElementName=RootWindow, Path=TaskNames}" Margin="5,5,10,0"/>
-        <DockPanel Grid.Column="1" Grid.Row="4" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-            <Button Grid.Column="1" Grid.Row="4" Name="bIgnore" Content="Ignore" Width="75" Margin="10,10,10,10" Click="bIgnore_Click"/>
-            <Button Grid.Column="1" Grid.Row="4" Name="bSave" Content="OK" Width="75" Margin="10,10,10,10" Click="bSave_Click"/>
+        <DockPanel Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="4" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+            <Button Grid.Column="1" Grid.Row="4" Name="bIgnore" Content="Ignore" Width="75" Margin="0,10,5,10" Click="bIgnore_Click" ToolTip="Ignore the task and time measured"/>
+            <Button Grid.Column="1" Grid.Row="4" Name="bContinue" Content="Continue" Width="75" Margin="0,10,5,10" Click="bContinue_Click" ToolTip="Do not save the task now but let it continue"/>
+            <Button Grid.Column="1" Grid.Row="4" Name="bSave" Content="Save" Width="75" Margin="0,10,10,10" Click="bSave_Click" ToolTip="End the task and save the time to the log"/>
         </DockPanel>
     </Grid>
 </Window>
