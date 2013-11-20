@@ -32,9 +32,8 @@ namespace TimeTrack
         private DateTime m_RecordStart;
         private DateTime m_RecordStop;
         private string m_Task;
-        private bool m_HistoryLoaded = false;
-
-        private List<KeyValuePair<string, TimeSpan>> m_TodaysTasks = new List<KeyValuePair<string,TimeSpan>>();
+        private DateTime m_Today = DateTime.Now.Date;
+        private TimeSpan m_WorkedToday = new TimeSpan(0);
 
         private ObservableCollection<string> m_TaskNames = new ObservableCollection<string>();
         public ObservableCollection<String> TaskNames
@@ -54,6 +53,16 @@ namespace TimeTrack
             {
                 m_IconTooltip = value;
                 NotifyPropertyChange("IconTooltip");
+            }
+        }
+
+        public TimeSpan WorkedToday
+        {
+            get { return m_WorkedToday; }
+            set
+            {
+                m_WorkedToday = value;
+                NotifyPropertyChange("WorkedToday");
             }
         }
 
@@ -98,29 +107,52 @@ namespace TimeTrack
             }
             else
             {
+                // Stop recording
                 TaskbarIcon.IconSource = (ImageSource)FindResource("IcoRecord");
                 IconTooltip = tbTooltipNotRecording.Text;
                 m_RecordStop = DateTime.Now;
 
+                // Update the date of "today" if it changed since the last task
+                if (DateTime.Now.Date > m_Today)
+                {
+                    m_Today = DateTime.Now.Date;
+                    WorkedToday = new TimeSpan(0);
+                }
+
+                // Calculate the task's length
                 dtFrom.Text = m_RecordStart.ToString("g");
                 dtTo.Text = m_RecordStop.ToString("g");
                 m_Task = string.Empty;
                 RecalcTask();
+
+                // Show the task window
                 this.Visibility = System.Windows.Visibility.Visible;
             }
         }
 
         private void bSave_Click(object sender, RoutedEventArgs e)
         {
+            m_Task = cbTask.Text;
+            if (string.IsNullOrWhiteSpace(m_Task))
+            {
+                MessageBox.Show("Task name mustn't be empty", "Insufficient data");
+                return;
+            }
+
             TimeSpan dif = m_RecordStop - m_RecordStart;
             if (dif < new TimeSpan(0))
                 dif = new TimeSpan(0);
-            m_Task = cbTask.Text;
             using (FileStream fs = new FileStream(DATA_FILE_PATH, FileMode.Append))
             using (StreamWriter sw = new StreamWriter(fs))
             {
                 sw.WriteLine(string.Format("{0}|{1}|{2}|{3}|{4}|{5}",
                     m_RecordStart.ToString("yyyy/MM/dd"), m_RecordStart.ToString("HH:mm"), m_RecordStop.ToString("HH:mm"), (int)dif.TotalMinutes, dif.TotalHours.ToString("0.00"), m_Task));
+            }
+
+            DateTime taskDate = m_RecordStart.Date;
+            if (taskDate == m_Today)
+            {
+                WorkedToday += dif;
             }
 
             this.Visibility = System.Windows.Visibility.Hidden;
@@ -157,14 +189,27 @@ namespace TimeTrack
             if (m_RecordStart >= m_RecordStop)
                 return;
             TimeSpan t = m_RecordStop - m_RecordStart;
-            lbTimeStats.Content = string.Format("{0} minutes; {1:0.00} hr", (int)t.TotalMinutes, t.TotalHours);
+
+            DateTime taskDate = m_RecordStart.Date;
+            TimeSpan workedToday = m_WorkedToday;
+
+            if (taskDate == m_Today)
+            {
+                workedToday = m_WorkedToday + t;
+            }
+            else if (taskDate > m_Today)
+            {
+                workedToday = t;
+            }
+
+            lbTimeStats.Content = string.Format("{1:0.00} hrs ({0} min); today: {2:0.00} hrs", (int)t.TotalMinutes, t.TotalHours, workedToday.TotalHours);
         }
 
         private void LoadHistory()
         {
             ObservableCollection<string> newTasks = new ObservableCollection<string>(m_TaskNames);
             int pos = newTasks.Count();
-            m_TodaysTasks.Clear();
+            TimeSpan workedToday = new TimeSpan(0);
             try
             {
                 using (FileStream fs = new FileStream(DATA_FILE_PATH, FileMode.Open))
@@ -186,21 +231,21 @@ namespace TimeTrack
                             continue;
                         string taskName = parts[5];
 
-                        if (!newTasks.Contains(taskName))
+                        if (!string.IsNullOrWhiteSpace(taskName) && !newTasks.Contains(taskName))
                             newTasks.Insert(pos, taskName);
 
                         DateTime today = DateTime.Now.Date;
                         if (date == today)
                         {
-                            m_TodaysTasks.Add(new KeyValuePair<string, TimeSpan>(taskName, new TimeSpan(0, minutes, 0)));
+                            workedToday += new TimeSpan(0, minutes, 0);
                         }
                     }
                 }
                 TaskNames = newTasks;
+                WorkedToday += workedToday;
             }
             catch (IOException)
             { }
-            m_HistoryLoaded = true;
         }
     }
 }
