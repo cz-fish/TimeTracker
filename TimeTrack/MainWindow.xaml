@@ -1,0 +1,54 @@
+﻿<Window x:Class="TimeTrack.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:tb="http://www.hardcodet.net/taskbar"
+        xmlns:local="clr-namespace:TimeTrack"
+        Title="TimeTrack" Height="220" Width="300"
+        ResizeMode="NoResize"
+        Name="RootWindow">
+    
+    <Window.Visibility>
+        Hidden
+    </Window.Visibility>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid.Resources>
+            <local:ToggleRecordingCommand x:Key="ToggleRecording"/>
+        </Grid.Resources>
+        <!-- Hidden objects -->
+        <TextBlock Name="tbTooltipNotRecording" Text="Not recording time. Click to start" Visibility="Hidden" Grid.Column="1"/>
+        <tb:TaskbarIcon Grid.Column="1"
+            x:Name="TaskbarIcon"
+            IconSource="{StaticResource ResourceKey=IcoRecord}"
+            ToolTipText="{Binding  ElementName=tbTooltipNotRecording, Path=Text}"
+            LeftClickCommand="{StaticResource ToggleRecording}"
+            LeftClickCommandParameter="{Binding ElementName=RootWindow}">
+        </tb:TaskbarIcon>
+
+        <!-- Visible controls -->
+        <Label Grid.Column="0" Grid.Row="0" Content="From:" Margin="10,10,0,0"/>
+        <Label Grid.Column="0" Grid.Row="1" Content="To:" Margin="10,5,0,0"/>
+        <Label Grid.Column="0" Grid.Row="2" Content="Task:" Margin="10,5,0,0"/>
+        <Label Grid.Column="1" Grid.Row="3" Name="lbTimeStats" Content="Time spent" Margin="5,5,10,0"/>
+        <TextBox Grid.Column="1" Grid.Row="0" Name="dtFrom" Text="0:00" Margin="5,10,10,0" TextChanged="dtFrom_TextChanged"/>
+        <TextBox Grid.Column="1" Grid.Row="1" Name="dtTo" Text="0:00" Margin="5,5,10,0" TextChanged="dtTo_TextChanged"/>
+        <ComboBox Grid.Column="1" Grid.Row="2" Name="cbTask" IsEditable="True" ItemsSource="{Binding ElementName=TaskNames}" Margin="5,5,10,0"/>
+        <DockPanel Grid.Column="1" Grid.Row="4" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+            <Button Grid.Column="1" Grid.Row="4" Name="bIgnore" Content="Ignore" Width="75" Margin="10,10,10,10" Click="bIgnore_Click"/>
+            <Button Grid.Column="1" Grid.Row="4" Name="bSave" Content="OK" Width="75" Margin="10,10,10,10" Click="bSave_Click"/>
+        </DockPanel>
+    </Grid>
+</Window>
