@@ -32,6 +32,9 @@ namespace TimeTrack
         private DateTime m_RecordStart;
         private DateTime m_RecordStop;
         private string m_Task;
+        private bool m_HistoryLoaded = false;
+
+        private List<KeyValuePair<string, TimeSpan>> m_TodaysTasks = new List<KeyValuePair<string,TimeSpan>>();
 
         private ObservableCollection<string> m_TaskNames = new ObservableCollection<string>();
         public ObservableCollection<String> TaskNames
@@ -72,6 +75,10 @@ namespace TimeTrack
         private void RootWindow_Initialized(object sender, EventArgs e)
         {
             IconTooltip = tbTooltipNotRecording.Text;
+            new Task(() =>
+            {
+                LoadHistory();
+            }).Start();
         }
 
         public void ToggleRecording()
@@ -106,11 +113,13 @@ namespace TimeTrack
         private void bSave_Click(object sender, RoutedEventArgs e)
         {
             TimeSpan dif = m_RecordStop - m_RecordStart;
+            if (dif < new TimeSpan(0))
+                dif = new TimeSpan(0);
             m_Task = cbTask.Text;
             using (FileStream fs = new FileStream(DATA_FILE_PATH, FileMode.Append))
             using (StreamWriter sw = new StreamWriter(fs))
             {
-                sw.WriteLine(string.Format("{0},{1},{2},{3},{4},{5}",
+                sw.WriteLine(string.Format("{0}|{1}|{2}|{3}|{4}|{5}",
                     m_RecordStart.ToString("yyyy/MM/dd"), m_RecordStart.ToString("HH:mm"), m_RecordStop.ToString("HH:mm"), (int)dif.TotalMinutes, dif.TotalHours.ToString("0.00"), m_Task));
             }
 
@@ -121,6 +130,14 @@ namespace TimeTrack
                 m_TaskNames.Insert(0, m_Task);
                 NotifyPropertyChange("TaskNames");
             }
+        }
+
+        private void bIgnore_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show("Are you sure that you want to ignore this time interval?", "Ignore time interval", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.No)
+                return;
+
+            this.Visibility = System.Windows.Visibility.Hidden;
         }
 
         private void dtTo_TextChanged(object sender, TextChangedEventArgs e)
@@ -143,12 +160,47 @@ namespace TimeTrack
             lbTimeStats.Content = string.Format("{0} minutes; {1:0.00} hr", (int)t.TotalMinutes, t.TotalHours);
         }
 
-        private void bIgnore_Click(object sender, RoutedEventArgs e)
+        private void LoadHistory()
         {
-            if (MessageBox.Show("Are you sure that you want to ignore this time interval?", "Ignore time interval", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.No)
-                return;
+            ObservableCollection<string> newTasks = new ObservableCollection<string>(m_TaskNames);
+            int pos = newTasks.Count();
+            m_TodaysTasks.Clear();
+            try
+            {
+                using (FileStream fs = new FileStream(DATA_FILE_PATH, FileMode.Open))
+                using (StreamReader sr = new StreamReader(fs))
+                {
+                    while (!sr.EndOfStream)
+                    {
+                        string line = sr.ReadLine().Trim();
+                        if (string.IsNullOrEmpty(line))
+                            continue;
 
-            this.Visibility = System.Windows.Visibility.Hidden;
+                        string[] parts = line.Split(new char[] { '|' }, 6);
+                        if (parts.Length < 6)
+                            continue;
+                        DateTime date;
+                        int minutes;
+                        if (!DateTime.TryParse(parts[0], out date)
+                            || !Int32.TryParse(parts[3], out minutes))
+                            continue;
+                        string taskName = parts[5];
+
+                        if (!newTasks.Contains(taskName))
+                            newTasks.Insert(pos, taskName);
+
+                        DateTime today = DateTime.Now.Date;
+                        if (date == today)
+                        {
+                            m_TodaysTasks.Add(new KeyValuePair<string, TimeSpan>(taskName, new TimeSpan(0, minutes, 0)));
+                        }
+                    }
+                }
+                TaskNames = newTasks;
+            }
+            catch (IOException)
+            { }
+            m_HistoryLoaded = true;
         }
     }
 }

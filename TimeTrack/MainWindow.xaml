@@ -8,6 +8,8 @@
         Name="RootWindow"
         Initialized="RootWindow_Initialized">
     
+    <!-- TODO: prevent the app from terminating when the user closes this window -->
+    
     <Window.Visibility>
         Hidden
     </Window.Visibility>
