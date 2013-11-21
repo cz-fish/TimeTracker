@@ -50,6 +50,28 @@ namespace WeeklyGrinder
                     result[j] += i[j];
             return result;
         }
+
+        private static Dictionary<string, int> _DayIndices = new Dictionary<string, int>()
+        {
+            { "Mon", 0 },
+            { "Tue", 1 },
+            { "Wed", 2 },
+            { "Thu", 3 },
+            { "Fri", 4 },
+            { "Sat", 5 },
+            { "Sun", 6 }
+        };
+
+        public string GetColumnTitle(PropertyDescriptor desc)
+        {
+            string propName = desc.Name;
+            if (propName == "TaskName")
+                return "Task";
+            else if (_DayIndices.ContainsKey(propName))
+                return (WeekStart + new TimeSpan(_DayIndices[propName], 0, 0, 0)).ToString("ddd dd");
+            else
+                return propName;
+        }
     }
 
     class DataModel: INotifyPropertyChanged

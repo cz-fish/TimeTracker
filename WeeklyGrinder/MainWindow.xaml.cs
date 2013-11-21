@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -33,6 +34,14 @@ namespace WeeklyGrinder
         private void NextWeek_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void DataGrid_AutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
+        {
+            var model = DataContext as DataModel;
+            if (model.CurrentWeekData == null || model.CurrentWeekData.Count < 1)
+                return;
+            e.Column.Header = model.CurrentWeekData[0].GetColumnTitle(e.PropertyDescriptor as PropertyDescriptor);
         }
     }
 }

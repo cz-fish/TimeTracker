@@ -19,16 +19,7 @@
             <Label Name="WeekFromTo" HorizontalAlignment="Center" Grid.Column="1" Content="{Binding Path=WeekStartDay, Converter={StaticResource WeekTitleConverter}}" Margin="5,5,5,5" Width="auto"/>
             <Button Content="&gt;" Name="NextWeek" Click="NextWeek_Click" Grid.Column="2" Width="75" Margin="5,5,5,5"/>
         </Grid>
-        <DataGrid MinHeight="200" Margin="5,5,5,5" AutoGenerateColumns="True" ItemsSource="{Binding CurrentWeekData}">
-<!--            <DataGrid.Columns>
-                <DataGridTemplateColumn Header="Task" Width="SizeToCells" IsReadOnly="True">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding TaskName}"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </DataGrid.Columns> -->
+        <DataGrid MinHeight="200" Margin="5,5,5,5" AutoGenerateColumns="True" ItemsSource="{Binding CurrentWeekData}" AutoGeneratingColumn="DataGrid_AutoGeneratingColumn">
         </DataGrid>
     </StackPanel>
 </Window>
