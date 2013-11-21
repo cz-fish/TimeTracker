@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeTrack", "TimeTrack\Time
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotifyIconWpf", "NotifyIconWpf\NotifyIconWpf.csproj", "{7AC63864-7638-41C4-969C-D3197EF2BED9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WeeklyGrinder", "WeeklyGrinder\WeeklyGrinder.csproj", "{5B87BD63-3ABC-4CC0-A44C-58DBDB7DB68F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{7AC63864-7638-41C4-969C-D3197EF2BED9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7AC63864-7638-41C4-969C-D3197EF2BED9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7AC63864-7638-41C4-969C-D3197EF2BED9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B87BD63-3ABC-4CC0-A44C-58DBDB7DB68F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B87BD63-3ABC-4CC0-A44C-58DBDB7DB68F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B87BD63-3ABC-4CC0-A44C-58DBDB7DB68F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B87BD63-3ABC-4CC0-A44C-58DBDB7DB68F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

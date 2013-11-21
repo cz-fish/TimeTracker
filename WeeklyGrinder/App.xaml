@@ -1,0 +1,9 @@
+﻿<Application x:Class="WeeklyGrinder.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:wg="clr-namespace:WeeklyGrinder"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <wg:WeekTitleConverter x:Key="WeekTitleConverter"/>
+    </Application.Resources>
+</Application>

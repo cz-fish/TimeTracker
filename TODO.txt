@@ -1,0 +1,8 @@
+* WeeklyGrinder application to show daily reports for each day
+  + navigate through weeks
+  + combine (sum up) multiple tasks together
+  + clear the log file on user's request
+* Context menu on right click on the tray icon with exit option
+* Nicer tray icons
+  + Render total hours worked today to the tray icon
+* Do not exit the application by closing the task window
