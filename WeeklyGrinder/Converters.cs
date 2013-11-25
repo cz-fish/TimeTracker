@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Data;
 
 namespace WeeklyGrinder
@@ -29,6 +30,26 @@ namespace WeeklyGrinder
             DateTime weekStart = GetWeekStartDay((DateTime)value);
             DateTime weekEnd = GetWeekEndDay(weekStart);
             return string.Format("Week from {0:m} to {1:m}", weekStart, weekEnd);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+    public class VisibleIfError : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (parameter == null)
+                throw new ArgumentNullException("parameter");
+            bool negate = (bool)parameter;
+
+            if (!(value is string) || string.IsNullOrEmpty(value as string))
+                // assume no error
+                return negate ? Visibility.Hidden : Visibility.Visible;
+            return negate ? Visibility.Visible : Visibility.Hidden;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

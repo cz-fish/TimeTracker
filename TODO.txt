@@ -1,10 +1,18 @@
-* WeeklyGrinder application to show daily reports for each day
+TimeTrack:
+  + Context menu on right click on the tray icon with exit option
+  + Nicer tray icons
+    + Render total hours worked today to the tray icon
+  + Do not exit the application by closing the task window
+  + Move TimeTracker window to front when it's made visible
+
+WeeklyGrinder:
   + navigate through weeks
+  + dim zero values
+
+-- Done ----
+
+TimeTrack:
+
+WeeklyGrinder:
   + combine (sum up) multiple tasks together
   + clear the log file on user's request
-  + dim zero values
-* Context menu on right click on the tray icon with exit option
-* Nicer tray icons
-  + Render total hours worked today to the tray icon
-* Do not exit the application by closing the task window
-* Move TimeTracker window to front when it's made visible

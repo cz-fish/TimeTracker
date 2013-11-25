@@ -81,5 +81,11 @@ namespace WeeklyGrinder
             if (gData.SelectedIndex != -1)
                 model.JoinLine(gData.SelectedIndex);
         }
+
+        private void bDismissError_Click(object sender, RoutedEventArgs e)
+        {
+            var model = DataContext as DataModel;
+            model.FileIOError = null;
+        }
     }
 }

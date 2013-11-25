@@ -6,6 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Collections.ObjectModel;
+using System.Windows.Media.Imaging;
+using System.Windows.Interop;
+using System.Windows;
 
 namespace WeeklyGrinder
 {
@@ -152,6 +155,25 @@ namespace WeeklyGrinder
             }
         }
 
+        private string m_FileIOError = null;
+        public string FileIOError
+        {
+            get { return m_FileIOError; }
+            set
+            {
+                m_FileIOError = value;
+                NotifyPropertyChange("FileIOError");
+            }
+        }
+
+        public BitmapSource ErrorIconSource
+        {
+            get
+            {
+                return Imaging.CreateBitmapSourceFromHIcon(System.Drawing.SystemIcons.Error.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            }
+        }
+
         protected void NotifyPropertyChange(string prop)
         {
             var handler = PropertyChanged;
@@ -220,8 +242,22 @@ namespace WeeklyGrinder
             {
                 errors.Add(string.Format("File IO exception: {0}", e.Message));
             }
+            catch (Exception e)
+            {
+                errors.Add(string.Format("{0} - {1}", e.GetType().Name, e.Message));
+            }
 
-            // TODO: show errors somehow
+            if (errors.Count > 0)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine("Loading the log file resulted in the following error(s):");
+                sb.AppendLine();
+                foreach (string err in errors)
+                {
+                    sb.AppendLine(err);
+                }
+                FileIOError = sb.ToString();
+            }
         }
 
         public void UpdateCurrentWeekData()
@@ -285,9 +321,9 @@ namespace WeeklyGrinder
                     }
                 }
             }
-            catch (IOException e)
+            catch (Exception e)
             {
-                // TODO: report errors somehow
+                FileIOError = string.Format("Clearing the log raised the following error:{0}{0}{1} - {2}", Environment.NewLine, e.GetType().Name, e.Message);
             }
         }
     }
