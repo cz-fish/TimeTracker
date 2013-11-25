@@ -261,5 +261,34 @@ namespace WeeklyGrinder
                 m_LineToJoinTo--;
             CanSplitLines = true;
         }
+
+        public void ClearLog(bool keepTaskNames)
+        {
+            try
+            {
+                // Overwrite the log file with an empty one
+                using (FileStream fs = new FileStream(DATA_FILE_PATH, FileMode.Create))
+                using (StreamWriter sw = new StreamWriter(fs))
+                {
+                    if (keepTaskNames)
+                    {
+                        // Create an empty task for each unique task name
+                        ISet<string> uniqueTasks = new HashSet<string>(m_TaskTimes.Select(t => t.Key.Value).Distinct());
+                        foreach (string taskName in uniqueTasks)
+                        {
+                            sw.WriteLine(string.Format("{0}|{1}|{1}|0|{2}|{3}",
+                                DateTime.Now.ToString("yyyy.MM.dd"),
+                                new DateTime().ToString("HH:mm"),
+                                0.00m,
+                                taskName));
+                        }
+                    }
+                }
+            }
+            catch (IOException e)
+            {
+                // TODO: report errors somehow
+            }
+        }
     }
 }

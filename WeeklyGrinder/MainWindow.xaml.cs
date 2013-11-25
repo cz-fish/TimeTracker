@@ -66,7 +66,11 @@ namespace WeeklyGrinder
 
         private void bClear_Click(object sender, RoutedEventArgs e)
         {
-
+            var result = MessageBox.Show(string.Format("We are about to clear the log.{0}{0}Do you want to keep task names?", Environment.NewLine), "Keep task names?", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+            if (result == MessageBoxResult.Cancel)
+                return;
+            var model = DataContext as DataModel;
+            model.ClearLog(result == MessageBoxResult.Yes);
         }
 
         private void gData_SelectionChanged(object sender, SelectionChangedEventArgs e)
