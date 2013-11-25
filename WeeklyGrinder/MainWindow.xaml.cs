@@ -43,5 +43,39 @@ namespace WeeklyGrinder
                 return;
             e.Column.Header = model.CurrentWeekData[0].GetColumnTitle(e.PropertyDescriptor as PropertyDescriptor);
         }
+
+        private void bJoin_Click(object sender, RoutedEventArgs e)
+        {
+            var model = DataContext as DataModel;
+            if (!model.IsJoiningRows)
+            {
+                // Reset selection index so that the the first line that the user selects from now is the target line
+                // for joining. If we didn't reset SelectedIndex here, the gData_SelectionChanged callback won't be
+                // triggered if the user selects the line with the SelectedIndex.
+                gData.SelectedIndex = -1;
+            }
+            model.IsJoiningRows = !model.IsJoiningRows;
+        }
+
+        private void bSplit_Click(object sender, RoutedEventArgs e)
+        {
+            var model = DataContext as DataModel;
+            model.CanSplitLines = false;
+            model.UpdateCurrentWeekData();
+        }
+
+        private void bClear_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void gData_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var model = DataContext as DataModel;
+            if (!model.IsJoiningRows)
+                return;
+            if (gData.SelectedIndex != -1)
+                model.JoinLine(gData.SelectedIndex);
+        }
     }
 }

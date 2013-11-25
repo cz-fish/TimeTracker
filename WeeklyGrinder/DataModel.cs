@@ -72,6 +72,16 @@ namespace WeeklyGrinder
             else
                 return propName;
         }
+
+        public WeekTaskData MergeLine(WeekTaskData other)
+        {
+            TaskName += " + " + other.TaskName;
+            for (int i = 0; i < 7; i++)
+            {
+                WorkedMinutes[i] += other.WorkedMinutes[i];
+            }
+            return this;
+        }
     }
 
     class DataModel: INotifyPropertyChanged
@@ -102,6 +112,43 @@ namespace WeeklyGrinder
             {
                 m_WeekStartDay = WeekTitleConverter.GetWeekStartDay(value);
                 NotifyPropertyChange("WeekStartDay");
+            }
+        }
+
+        private bool m_IsJoiningRows = false;
+        public bool IsJoiningRows
+        {
+            get { return m_IsJoiningRows; }
+            set
+            {
+                m_IsJoiningRows = value;
+                if (value)
+                    m_LineToJoinTo = -1;
+                NotifyPropertyChange("IsJoiningRows");
+                NotifyPropertyChange("JoinLinesButtonText");
+            }
+        }
+
+        public string JoinLinesButtonText
+        {
+            get
+            {
+                return m_IsJoiningRows ? "Done Joining" : "Join Lines";
+            }
+        }
+
+        private int m_LineToJoinTo = -1;
+
+        private bool m_CanSplitLines = false;
+        public bool CanSplitLines
+        {
+            get { return m_CanSplitLines; }
+            set
+            {
+                m_CanSplitLines = value;
+                NotifyPropertyChange("CanSplitLines");
+                if (!value)
+                    IsJoiningRows = false;
             }
         }
 
@@ -177,7 +224,7 @@ namespace WeeklyGrinder
             // TODO: show errors somehow
         }
 
-        private void UpdateCurrentWeekData()
+        public void UpdateCurrentWeekData()
         {
             // Compute week boundaries
             DateTime weekStart = WeekStartDay;
@@ -192,6 +239,27 @@ namespace WeeklyGrinder
                     // Group partial day records of the same tasks together
                     .GroupBy(t => t.TaskName, t => t.GetWorkedMinutes(), (key, days) => new WeekTaskData(weekStart, key, WeekTaskData.Condense(days)))
             );
+        }
+
+        public void JoinLine(int lineNo)
+        {
+            if (m_LineToJoinTo == -1)
+            {
+                m_LineToJoinTo = lineNo;
+                return;
+            }
+            if (m_LineToJoinTo == lineNo)
+                return;
+
+            // It's not sufficient to just change contents of the element on the m_LineToJoinTo position.
+            // To refresh the DataGrid contents, we insert a new row and delete the old two.
+            CurrentWeekData.Insert(m_LineToJoinTo, CurrentWeekData[m_LineToJoinTo].MergeLine(CurrentWeekData[lineNo]));
+            CurrentWeekData.RemoveAt(m_LineToJoinTo + 1);
+            CurrentWeekData.RemoveAt(lineNo);
+            // Update the index of the target line, if the deleted line was before it in the list
+            if (lineNo < m_LineToJoinTo)
+                m_LineToJoinTo--;
+            CanSplitLines = true;
         }
     }
 }

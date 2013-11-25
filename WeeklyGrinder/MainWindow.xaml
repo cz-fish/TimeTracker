@@ -8,8 +8,14 @@
         <wg:DataModel></wg:DataModel>
     </Window.DataContext>
     
-    <StackPanel Orientation="Vertical">
-        <Grid>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="*"/>
@@ -19,7 +25,14 @@
             <Label Name="WeekFromTo" HorizontalAlignment="Center" Grid.Column="1" Content="{Binding Path=WeekStartDay, Converter={StaticResource WeekTitleConverter}}" Margin="5,5,5,5" Width="auto"/>
             <Button Content="&gt;" Name="NextWeek" Click="NextWeek_Click" Grid.Column="2" Width="75" Margin="5,5,5,5"/>
         </Grid>
-        <DataGrid MinHeight="200" Margin="5,5,5,5" AutoGenerateColumns="True" ItemsSource="{Binding CurrentWeekData}" AutoGeneratingColumn="DataGrid_AutoGeneratingColumn">
+        <DataGrid Grid.Row="1" MinHeight="200" Margin="5,5,5,5" AutoGenerateColumns="True" ItemsSource="{Binding CurrentWeekData}" AutoGeneratingColumn="DataGrid_AutoGeneratingColumn"
+                  SelectionChanged="gData_SelectionChanged"
+                  Name="gData">
         </DataGrid>
-    </StackPanel>
+        <StackPanel Grid.Row="2" Orientation="Horizontal">
+            <Button Name="bJoin" Content="{Binding Path=JoinLinesButtonText}" Width="75" Click="bJoin_Click" Margin="5,10,5,10"/>
+            <Button Name="bSplit" Content="Split" Width="75" Click="bSplit_Click" Margin="5,10,5,10" IsEnabled="{Binding Path=CanSplitLines}"/>
+            <Button Name="bClear" Content="Clear Log" Width="75" Click="bClear_Click" Margin="5,10,5,10"/>
+        </StackPanel>
+    </Grid>
 </Window>
