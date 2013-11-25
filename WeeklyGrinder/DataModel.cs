@@ -233,7 +233,7 @@ namespace WeeklyGrinder
             CurrentWeekData = new ObservableCollection<WeekTaskData>(
                 m_TaskTimes
                     // Filter data for the given week
-                    .Where(t => t.Key.Key >= weekStart && t.Key.Key <= weekEnd)
+                    .Where(t => t.Key.Key >= weekStart && t.Key.Key <= weekEnd && t.Value > 0)
                     // Create a partial WeekTaskData structure for each task and day
                     .Select(t => new WeekTaskData(t.Key.Value, (t.Key.Key - weekStart).Days, t.Value))
                     // Group partial day records of the same tasks together
