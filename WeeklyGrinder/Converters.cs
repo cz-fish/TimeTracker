@@ -96,32 +96,7 @@ namespace WeeklyGrinder
         }
     }
 
-
-    public class CellForegroundConverter : IMultiValueConverter
-    {
-        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            if (values[0] is DataGridCell && values[1] is WeekTaskData)
-            {
-                var cell = values[0] as DataGridCell;
-                var data = values[1] as WeekTaskData;
-                int index = cell.Column.DisplayIndex;
-
-                if (index > 0 && index < 8 && data.GetWorkedMinutes()[index-1] == 0.0m && !data.IsTotals())
-                {
-                    return new SolidColorBrush(Colors.LightGray);
-                }
-            }
-            return new SolidColorBrush(Colors.Black);
-        }
-
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
-        {
-            throw new NotSupportedException();
-        }
-    }
-
-    public class CellBackgroundConverter : IMultiValueConverter
+    public abstract class CellStyleConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
@@ -133,9 +108,14 @@ namespace WeeklyGrinder
 
                 if (index == 8 || data.IsTotals())
                 {
-                    return new SolidColorBrush(Colors.LightGray);
+                    return GetValueForTotalsCell();
+                }
+                else if (index > 0 && index < 8 && data.GetWorkedMinutes()[index - 1] == 0.0m)
+                {
+                    return GetValueForZeroCell();
                 }
             }
+            //Keep default value
             return DependencyProperty.UnsetValue;
         }
 
@@ -143,29 +123,47 @@ namespace WeeklyGrinder
         {
             throw new NotSupportedException();
         }
+
+        protected abstract object GetValueForTotalsCell();
+        protected abstract object GetValueForZeroCell();
     }
 
-    public class CellFontWeightConverter : IMultiValueConverter
+    public class CellForegroundConverter : CellStyleConverter
     {
-        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        protected override object GetValueForTotalsCell()
         {
-            if (values[0] is DataGridCell && values[1] is WeekTaskData)
-            {
-                var cell = values[0] as DataGridCell;
-                var data = values[1] as WeekTaskData;
-                int index = cell.Column.DisplayIndex;
-
-                if (index == 8 || data.IsTotals())
-                {
-                    return FontStyles.Italic;
-                }
-            }
-            return FontStyles.Normal;
+            return DependencyProperty.UnsetValue;
         }
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        protected override object GetValueForZeroCell()
         {
-            throw new NotSupportedException();
+            return new SolidColorBrush(Colors.LightGray);
+        }
+    }
+
+    public class CellBackgroundConverter : CellStyleConverter
+    {
+        protected override object GetValueForTotalsCell()
+        {
+            return new SolidColorBrush(Colors.LightGray);
+        }
+
+        protected override object GetValueForZeroCell()
+        {
+            return DependencyProperty.UnsetValue;
+        }
+    }
+
+    public class CellFontWeightConverter : CellStyleConverter
+    {
+        protected override object GetValueForTotalsCell()
+        {
+            return FontStyles.Italic;
+        }
+
+        protected override object GetValueForZeroCell()
+        {
+            return FontStyles.Normal;
         }
     }
 }
