@@ -23,7 +23,10 @@ namespace WeeklyGrinder
         public string Fri { get { return ((decimal)WorkedMinutes[4] / 60.0m).ToString("0.00"); } }
         public string Sat { get { return ((decimal)WorkedMinutes[5] / 60.0m).ToString("0.00"); } }
         public string Sun { get { return ((decimal)WorkedMinutes[6] / 60.0m).ToString("0.00"); } }
+        public string Weekly { get { return ((decimal)WorkedMinutes.Sum() / 60.0m).ToString("0.00"); } }
 
+        // This property doesn't have a public getter so that it's not displayed as a column in the DataGrid.
+        // Use the GetWorkedMinutes() method instead
         public int[] WorkedMinutes { private get; set; }
         public int[] GetWorkedMinutes()
         {
@@ -308,10 +311,20 @@ namespace WeeklyGrinder
                     // Group partial day records of the same tasks together
                     .GroupBy(t => t.TaskName, t => t.GetWorkedMinutes(), (key, days) => new WeekTaskData(weekStart, key, WeekTaskData.Condense(days)))
             );
+
+            WeekTaskData totals = new WeekTaskData(weekStart, "Totals", new int[7]);
+            foreach (var tsk in CurrentWeekData)
+                totals = totals.MergeLine(tsk);
+            totals.TaskName = "Totals";
+            CurrentWeekData.Add(totals);
         }
 
         public void JoinLine(int lineNo)
         {
+            // The last line contains daily totals and we don't want the user to join this line
+            if (lineNo >= CurrentWeekData.Count - 1)
+                return;
+
             if (m_LineToJoinTo == -1)
             {
                 m_LineToJoinTo = lineNo;

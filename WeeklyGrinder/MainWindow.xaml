@@ -44,7 +44,7 @@
                 </Button>
             </Grid>
             <DataGrid Grid.Row="1" MinHeight="200" Margin="5,5,5,5" AutoGenerateColumns="True" ItemsSource="{Binding CurrentWeekData}" AutoGeneratingColumn="DataGrid_AutoGeneratingColumn"
-                  SelectionChanged="gData_SelectionChanged"
+                  SelectionChanged="gData_SelectionChanged" CanUserReorderColumns="False" CanUserSortColumns="False"
                   Name="gData">
             </DataGrid>
             <StackPanel Grid.Row="2" Orientation="Horizontal">
