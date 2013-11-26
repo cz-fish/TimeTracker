@@ -31,9 +31,17 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
-                <Button Content="&lt;" Name="PrevWeek" Click="PrevWeek_Click" Grid.Column="0" Width="75" Margin="5,5,5,5"/>
+                <Button Content="&lt;" Name="PrevWeek" Click="PrevWeek_Click" Grid.Column="0" Width="75" Margin="5,5,5,5"
+                        IsEnabled="{Binding Path=WeekIndex, Converter={StaticResource EnabledIfNotFirst}}" />
                 <Label Name="WeekFromTo" HorizontalAlignment="Center" Grid.Column="1" Content="{Binding Path=WeekStartDay, Converter={StaticResource WeekTitleConverter}}" Margin="5,5,5,5" Width="auto"/>
-                <Button Content="&gt;" Name="NextWeek" Click="NextWeek_Click" Grid.Column="2" Width="75" Margin="5,5,5,5"/>
+                <Button Content="&gt;" Name="NextWeek" Click="NextWeek_Click" Grid.Column="2" Width="75" Margin="5,5,5,5">
+                    <Button.IsEnabled>
+                        <MultiBinding Converter="{StaticResource EnabledIfNotLast}">
+                            <Binding Path="WeekIndex"/>
+                            <Binding Path="Weeks"/>
+                        </MultiBinding>
+                    </Button.IsEnabled>
+                </Button>
             </Grid>
             <DataGrid Grid.Row="1" MinHeight="200" Margin="5,5,5,5" AutoGenerateColumns="True" ItemsSource="{Binding CurrentWeekData}" AutoGeneratingColumn="DataGrid_AutoGeneratingColumn"
                   SelectionChanged="gData_SelectionChanged"

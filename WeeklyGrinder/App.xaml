@@ -6,5 +6,7 @@
     <Application.Resources>
         <wg:WeekTitleConverter x:Key="WeekTitleConverter"/>
         <wg:VisibleIfError x:Key="VisibleIfError"/>
+        <wg:EnabledIfNotFirst x:Key="EnabledIfNotFirst"/>
+        <wg:EnabledIfNotLast x:Key="EnabledIfNotLast"/>
     </Application.Resources>
 </Application>

@@ -113,8 +113,12 @@ namespace WeeklyGrinder
             get { return m_WeekStartDay; }
             set
             {
-                m_WeekStartDay = WeekTitleConverter.GetWeekStartDay(value);
+                var newDay = WeekTitleConverter.GetWeekStartDay(value);
+                if (newDay == m_WeekStartDay)
+                    return;
+                m_WeekStartDay = newDay;
                 NotifyPropertyChange("WeekStartDay");
+                UpdateCurrentWeekData();
             }
         }
 
@@ -174,6 +178,29 @@ namespace WeeklyGrinder
             }
         }
 
+        private List<DateTime> m_Weeks = new List<DateTime>();
+        public List<DateTime> Weeks
+        {
+            get { return m_Weeks; }
+            private set { m_Weeks = value; }
+        }
+
+        private int m_WeekIndex = -1;
+        public int WeekIndex
+        {
+            get { return m_WeekIndex; }
+            set
+            {
+                if (value < 0 || value >= Weeks.Count)
+                    return;
+                m_WeekIndex = value;
+                NotifyPropertyChange("WeekIndex");
+                WeekStartDay = Weeks[m_WeekIndex];
+                CanSplitLines = false;
+                IsJoiningRows = false;
+            }
+        }
+
         protected void NotifyPropertyChange(string prop)
         {
             var handler = PropertyChanged;
@@ -199,6 +226,7 @@ namespace WeeklyGrinder
         {
             List<string> errors = new List<string>();
             m_TaskTimes.Clear();
+            var weeks = new SortedSet<DateTime>();
 
             try
             {
@@ -235,6 +263,8 @@ namespace WeeklyGrinder
                             m_TaskTimes.Add(key, 0);
                         }
                         m_TaskTimes[key] += minutes;
+
+                        weeks.Add(WeekTitleConverter.GetWeekStartDay(date));
                     }
                 }
             }
@@ -246,6 +276,9 @@ namespace WeeklyGrinder
             {
                 errors.Add(string.Format("{0} - {1}", e.GetType().Name, e.Message));
             }
+
+            Weeks = weeks.ToList();
+            WeekIndex = Weeks.Count - 1;
 
             if (errors.Count > 0)
             {

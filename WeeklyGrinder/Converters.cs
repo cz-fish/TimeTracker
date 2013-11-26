@@ -57,4 +57,39 @@ namespace WeeklyGrinder
             throw new NotSupportedException();
         }
     }
+
+    public class EnabledIfNotFirst : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (!(value is int))
+                return false;
+
+            int index = (int)value;
+            return index > 0;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+    public class EnabledIfNotLast : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (values == null || values.Length < 2 || !(values[0] is int) || values[1] == null || !(values[1] is List<DateTime>))
+                return false;
+
+            int index = (int)values[0];
+            var list = values[1] as List<DateTime>;
+            return index < list.Count - 1;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
 }

@@ -28,12 +28,14 @@ namespace WeeklyGrinder
 
         private void PrevWeek_Click(object sender, RoutedEventArgs e)
         {
-
+            var model = DataContext as DataModel;
+            model.WeekIndex--;
         }
 
         private void NextWeek_Click(object sender, RoutedEventArgs e)
         {
-
+            var model = DataContext as DataModel;
+            model.WeekIndex++;
         }
 
         private void DataGrid_AutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
