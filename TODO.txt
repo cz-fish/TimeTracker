@@ -6,8 +6,8 @@ TimeTrack:
   + Move TimeTracker window to front when it's made visible
 
 WeeklyGrinder:
-  + navigate through weeks
   + dim zero values
+  + add Totals line to the data grid with sum in each column
 
 -- Done ----
 
@@ -16,3 +16,4 @@ TimeTrack:
 WeeklyGrinder:
   + combine (sum up) multiple tasks together
   + clear the log file on user's request
+  + navigate through weeks
