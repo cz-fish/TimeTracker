@@ -8,5 +8,9 @@
         <wg:VisibleIfError x:Key="VisibleIfError"/>
         <wg:EnabledIfNotFirst x:Key="EnabledIfNotFirst"/>
         <wg:EnabledIfNotLast x:Key="EnabledIfNotLast"/>
+
+        <wg:CellForegroundConverter x:Key="cellForegroundConverter" />
+        <wg:CellBackgroundConverter x:Key="cellBackgroundConverter" />
+        <wg:CellFontWeightConverter x:Key="cellFontweightConverter" />
     </Application.Resources>
 </Application>

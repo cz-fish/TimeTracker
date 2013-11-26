@@ -34,18 +34,20 @@ namespace WeeklyGrinder
         }
         public DateTime WeekStart { private get; set; }
 
-        public WeekTaskData(string taskName, int dayIndex, int minutes)
+        public WeekTaskData(string taskName, int dayIndex, int minutes, bool isTotals = false)
         {
             TaskName = taskName;
             WorkedMinutes = new int[7];
             WorkedMinutes[dayIndex] = minutes;
+            m_IsTotals = isTotals;
         }
 
-        public WeekTaskData(DateTime weekStart, string taskName, int[] workedMinutes)
+        public WeekTaskData(DateTime weekStart, string taskName, int[] workedMinutes, bool isTotals = false)
         {
             WeekStart = weekStart;
             TaskName = taskName;
             WorkedMinutes = workedMinutes;
+            m_IsTotals = isTotals;
         }
 
         public static int[] Condense(IEnumerable<int[]> dayData)
@@ -87,6 +89,12 @@ namespace WeeklyGrinder
                 WorkedMinutes[i] += other.WorkedMinutes[i];
             }
             return this;
+        }
+
+        private bool m_IsTotals = false;
+        public bool IsTotals()
+        {
+            return m_IsTotals;
         }
     }
 
@@ -312,7 +320,7 @@ namespace WeeklyGrinder
                     .GroupBy(t => t.TaskName, t => t.GetWorkedMinutes(), (key, days) => new WeekTaskData(weekStart, key, WeekTaskData.Condense(days)))
             );
 
-            WeekTaskData totals = new WeekTaskData(weekStart, "Totals", new int[7]);
+            WeekTaskData totals = new WeekTaskData(weekStart, "Totals", new int[7], true);
             foreach (var tsk in CurrentWeekData)
                 totals = totals.MergeLine(tsk);
             totals.TaskName = "Totals";

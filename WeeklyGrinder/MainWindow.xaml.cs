@@ -44,6 +44,11 @@ namespace WeeklyGrinder
             if (model.CurrentWeekData == null || model.CurrentWeekData.Count < 1)
                 return;
             e.Column.Header = model.CurrentWeekData[0].GetColumnTitle(e.PropertyDescriptor as PropertyDescriptor);
+
+            if (e.Column.Header.ToString() == "Task")
+                e.Column.Width = new DataGridLength(1, DataGridLengthUnitType.Star);
+            else
+                e.Column.Width = DataGridLength.Auto;
         }
 
         private void bJoin_Click(object sender, RoutedEventArgs e)

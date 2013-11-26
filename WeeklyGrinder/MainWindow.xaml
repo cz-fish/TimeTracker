@@ -43,9 +43,43 @@
                     </Button.IsEnabled>
                 </Button>
             </Grid>
-            <DataGrid Grid.Row="1" MinHeight="200" Margin="5,5,5,5" AutoGenerateColumns="True" ItemsSource="{Binding CurrentWeekData}" AutoGeneratingColumn="DataGrid_AutoGeneratingColumn"
-                  SelectionChanged="gData_SelectionChanged" CanUserReorderColumns="False" CanUserSortColumns="False"
+            <DataGrid Grid.Row="1" MinHeight="200" Margin="5,5,5,5" AutoGenerateColumns="True" ColumnWidth="*" ItemsSource="{Binding CurrentWeekData}" AutoGeneratingColumn="DataGrid_AutoGeneratingColumn"
+                  SelectionChanged="gData_SelectionChanged" CanUserReorderColumns="False" CanUserSortColumns="False" AlternatingRowBackground="LightGreen"
                   Name="gData">
+                <DataGrid.CellStyle>
+                    <Style TargetType="{x:Type DataGridCell}">
+                        <Setter Property="DataGrid.Foreground">
+                            <Setter.Value>
+                                <MultiBinding Converter="{StaticResource cellForegroundConverter}" >
+                                    <MultiBinding.Bindings>
+                                        <Binding RelativeSource="{RelativeSource Self}"/>
+                                        <Binding />
+                                    </MultiBinding.Bindings>
+                                </MultiBinding>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="DataGrid.Background">
+                            <Setter.Value>
+                                <MultiBinding Converter="{StaticResource cellBackgroundConverter}" >
+                                    <MultiBinding.Bindings>
+                                        <Binding RelativeSource="{RelativeSource Self}"/>
+                                        <Binding />
+                                    </MultiBinding.Bindings>
+                                </MultiBinding>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="DataGrid.FontStyle">
+                            <Setter.Value>
+                                <MultiBinding Converter="{StaticResource cellFontweightConverter}" >
+                                    <MultiBinding.Bindings>
+                                        <Binding RelativeSource="{RelativeSource Self}"/>
+                                        <Binding />
+                                    </MultiBinding.Bindings>
+                                </MultiBinding>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </DataGrid.CellStyle>
             </DataGrid>
             <StackPanel Grid.Row="2" Orientation="Horizontal">
                 <Button Name="bJoin" Content="{Binding Path=JoinLinesButtonText}" Width="75" Click="bJoin_Click" Margin="5,10,5,10"/>

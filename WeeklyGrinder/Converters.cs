@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media;
 
 namespace WeeklyGrinder
 {
@@ -85,6 +88,79 @@ namespace WeeklyGrinder
             int index = (int)values[0];
             var list = values[1] as List<DateTime>;
             return index < list.Count - 1;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+
+    public class CellForegroundConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (values[0] is DataGridCell && values[1] is WeekTaskData)
+            {
+                var cell = values[0] as DataGridCell;
+                var data = values[1] as WeekTaskData;
+                int index = cell.Column.DisplayIndex;
+
+                if (index > 0 && index < 8 && data.GetWorkedMinutes()[index-1] == 0.0m && !data.IsTotals())
+                {
+                    return new SolidColorBrush(Colors.LightGray);
+                }
+            }
+            return new SolidColorBrush(Colors.Black);
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+    public class CellBackgroundConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (values[0] is DataGridCell && values[1] is WeekTaskData)
+            {
+                var cell = values[0] as DataGridCell;
+                var data = values[1] as WeekTaskData;
+                int index = cell.Column.DisplayIndex;
+
+                if (index == 8 || data.IsTotals())
+                {
+                    return new SolidColorBrush(Colors.LightGray);
+                }
+            }
+            return DependencyProperty.UnsetValue;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+    public class CellFontWeightConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (values[0] is DataGridCell && values[1] is WeekTaskData)
+            {
+                var cell = values[0] as DataGridCell;
+                var data = values[1] as WeekTaskData;
+                int index = cell.Column.DisplayIndex;
+
+                if (index == 8 || data.IsTotals())
+                {
+                    return FontStyles.Italic;
+                }
+            }
+            return FontStyles.Normal;
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture)
