@@ -122,16 +122,16 @@ namespace WeeklyGrinder
             }
         }
 
-        private bool m_IsJoiningRows = false;
-        public bool IsJoiningRows
+        private bool m_IsJoiningLines = false;
+        public bool IsJoiningLines
         {
-            get { return m_IsJoiningRows; }
+            get { return m_IsJoiningLines; }
             set
             {
-                m_IsJoiningRows = value;
+                m_IsJoiningLines = value;
                 if (value)
                     m_LineToJoinTo = -1;
-                NotifyPropertyChange("IsJoiningRows");
+                NotifyPropertyChange("IsJoiningLines");
                 NotifyPropertyChange("JoinLinesButtonText");
             }
         }
@@ -140,7 +140,7 @@ namespace WeeklyGrinder
         {
             get
             {
-                return m_IsJoiningRows ? "Done Joining" : "Join Lines";
+                return m_IsJoiningLines ? "Done Joining" : "Join Lines";
             }
         }
 
@@ -155,7 +155,7 @@ namespace WeeklyGrinder
                 m_CanSplitLines = value;
                 NotifyPropertyChange("CanSplitLines");
                 if (!value)
-                    IsJoiningRows = false;
+                    IsJoiningLines = false;
             }
         }
 
@@ -197,7 +197,7 @@ namespace WeeklyGrinder
                 NotifyPropertyChange("WeekIndex");
                 WeekStartDay = Weeks[m_WeekIndex];
                 CanSplitLines = false;
-                IsJoiningRows = false;
+                IsJoiningLines = false;
             }
         }
 

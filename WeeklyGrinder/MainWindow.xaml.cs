@@ -49,14 +49,14 @@ namespace WeeklyGrinder
         private void bJoin_Click(object sender, RoutedEventArgs e)
         {
             var model = DataContext as DataModel;
-            if (!model.IsJoiningRows)
+            if (!model.IsJoiningLines)
             {
                 // Reset selection index so that the the first line that the user selects from now is the target line
                 // for joining. If we didn't reset SelectedIndex here, the gData_SelectionChanged callback won't be
                 // triggered if the user selects the line with the SelectedIndex.
                 gData.SelectedIndex = -1;
             }
-            model.IsJoiningRows = !model.IsJoiningRows;
+            model.IsJoiningLines = !model.IsJoiningLines;
         }
 
         private void bSplit_Click(object sender, RoutedEventArgs e)
@@ -78,7 +78,7 @@ namespace WeeklyGrinder
         private void gData_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var model = DataContext as DataModel;
-            if (!model.IsJoiningRows)
+            if (!model.IsJoiningLines)
                 return;
             if (gData.SelectedIndex != -1)
                 model.JoinLine(gData.SelectedIndex);
