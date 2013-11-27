@@ -34,6 +34,7 @@ namespace TimeTrack
         private string m_Task;
         private DateTime m_Today = DateTime.Now.Date;
         private TimeSpan m_WorkedToday = new TimeSpan(0);
+        private System.Threading.Timer m_TrayicoRefreshTimer;
 
         private ObservableCollection<string> m_TaskNames = new ObservableCollection<string>();
         public ObservableCollection<String> TaskNames
@@ -90,7 +91,16 @@ namespace TimeTrack
                     SwitchIconToRecording();
                 else
                     SwitchIconToStopped();
+                m_TrayicoRefreshTimer = new System.Threading.Timer(RefreshTrayico, null, 2 * 60 * 1000, 2 * 60 * 1000);
             }).Start();
+        }
+
+        private void RefreshTrayico(object state)
+        {
+            if (m_Recording)
+                SwitchIconToRecording();
+            else
+                SwitchIconToStopped();
         }
 
         public void ToggleRecording()
@@ -154,6 +164,8 @@ namespace TimeTrack
             if (taskDate == m_Today)
             {
                 WorkedToday += dif;
+                // Redraw the trayicon to refresh the worked hours displayed on it
+                SwitchIconToStopped();
             }
 
             this.Visibility = System.Windows.Visibility.Hidden;
@@ -258,14 +270,22 @@ namespace TimeTrack
 
         private void SwitchIconToRecording()
         {
-            TaskbarIcon.Icon = IconPainter.GetRecordingIcon(WorkedToday.TotalHours);
+            TaskbarIcon.Icon = IconPainter.GetRecordingIcon(GetCurrentTodaysHours());
             IconTooltip = string.Format("Recording time since {0}. Click to stop", m_RecordStart.ToString("HH:mm"));
         }
 
         private void SwitchIconToStopped()
         {
-            TaskbarIcon.Icon = IconPainter.GetStoppedIcon(WorkedToday.TotalHours);
+            TaskbarIcon.Icon = IconPainter.GetStoppedIcon(GetCurrentTodaysHours());
             IconTooltip = "Not recording time. Click to start";
+        }
+
+        private double GetCurrentTodaysHours()
+        {
+            TimeSpan uncommitted = new TimeSpan(0);
+            if (m_Recording)
+                uncommitted = DateTime.Now - m_RecordStart;
+            return (WorkedToday + uncommitted).TotalHours;
         }
     }
 }

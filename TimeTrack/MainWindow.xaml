@@ -35,7 +35,6 @@
         <!-- Hidden objects -->
         <tb:TaskbarIcon Grid.Column="1"
             x:Name="TaskbarIcon"
-            IconSource="{StaticResource ResourceKey=IcoRecord}"
             ToolTipText="{Binding ElementName=RootWindow, Path=IconTooltip}"
             LeftClickCommand="{StaticResource ToggleRecording}"
             LeftClickCommandParameter="{Binding ElementName=RootWindow}">
