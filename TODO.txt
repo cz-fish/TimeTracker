@@ -1,7 +1,5 @@
 TimeTrack:
   + Context menu on right click on the tray icon with exit option
-  + Nicer tray icons
-    + Render total hours worked today to the tray icon
   + Do not exit the application by closing the task window
   + Move TimeTracker window to front when it's made visible
 
@@ -10,6 +8,8 @@ WeeklyGrinder:
 -- Done ----
 
 TimeTrack:
+  + Nicer tray icons
+    + Render total hours worked today to the tray icon
 
 WeeklyGrinder:
   + combine (sum up) multiple tasks together
