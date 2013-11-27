@@ -33,7 +33,6 @@
         </Grid.Resources>
         
         <!-- Hidden objects -->
-        <TextBlock Name="tbTooltipNotRecording" Text="Not recording time. Click to start" Visibility="Hidden" Grid.Column="1"/>
         <tb:TaskbarIcon Grid.Column="1"
             x:Name="TaskbarIcon"
             IconSource="{StaticResource ResourceKey=IcoRecord}"

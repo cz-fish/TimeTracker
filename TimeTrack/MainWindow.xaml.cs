@@ -83,10 +83,13 @@ namespace TimeTrack
 
         private void RootWindow_Initialized(object sender, EventArgs e)
         {
-            IconTooltip = tbTooltipNotRecording.Text;
             new Task(() =>
             {
                 LoadHistory();
+                if (m_Recording)
+                    SwitchIconToRecording();
+                else
+                    SwitchIconToStopped();
             }).Start();
         }
 
@@ -255,14 +258,14 @@ namespace TimeTrack
 
         private void SwitchIconToRecording()
         {
-            TaskbarIcon.IconSource = (ImageSource)FindResource("IcoStop");
+            TaskbarIcon.Icon = IconPainter.GetRecordingIcon(WorkedToday.TotalHours);
             IconTooltip = string.Format("Recording time since {0}. Click to stop", m_RecordStart.ToString("HH:mm"));
         }
 
         private void SwitchIconToStopped()
         {
-            TaskbarIcon.IconSource = (ImageSource)FindResource("IcoRecord");
-            IconTooltip = tbTooltipNotRecording.Text;
+            TaskbarIcon.Icon = IconPainter.GetStoppedIcon(WorkedToday.TotalHours);
+            IconTooltip = "Not recording time. Click to start";
         }
     }
 }
