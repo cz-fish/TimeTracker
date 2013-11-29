@@ -108,6 +108,9 @@ namespace WeeklyGrinder
         /// </summary>
         private Dictionary<KeyValuePair<DateTime, string>, int> m_TaskTimes = new Dictionary<KeyValuePair<DateTime, string>, int>();
         private ObservableCollection<WeekTaskData> m_CurrentWeekData;
+        /// <summary>
+        /// A subset of TaskTimes for the current week (determined by WeekStartDay)
+        /// </summary>
         public ObservableCollection<WeekTaskData> CurrentWeekData
         {
             get { return m_CurrentWeekData; }
@@ -119,6 +122,9 @@ namespace WeeklyGrinder
         }
 
         private DateTime m_WeekStartDay;
+        /// <summary>
+        /// Date of Monday of the currently displayed week
+        /// </summary>
         public DateTime WeekStartDay
         {
             get { return m_WeekStartDay; }
@@ -134,6 +140,9 @@ namespace WeeklyGrinder
         }
 
         private bool m_IsJoiningLines = false;
+        /// <summary>
+        /// If true, the user is currently able to join datagrid lines by clicking on them. Otherwise clicking will have no effect
+        /// </summary>
         public bool IsJoiningLines
         {
             get { return m_IsJoiningLines; }
@@ -147,6 +156,9 @@ namespace WeeklyGrinder
             }
         }
 
+        /// <summary>
+        /// Text shown on the JoinLines button
+        /// </summary>
         public string JoinLinesButtonText
         {
             get
@@ -155,22 +167,17 @@ namespace WeeklyGrinder
             }
         }
 
+        /// <summary>
+        /// Index of the task (in CurrentWeekData) to which to join other task in the JoinLine method (i.e. the target line).
+        /// -1 denotes an unset value.
+        /// </summary>
         private int m_LineToJoinTo = -1;
 
-        private bool m_CanSplitLines = false;
-        public bool CanSplitLines
-        {
-            get { return m_CanSplitLines; }
-            set
-            {
-                m_CanSplitLines = value;
-                NotifyPropertyChange("CanSplitLines");
-                if (!value)
-                    IsJoiningLines = false;
-            }
-        }
-
         private string m_FileIOError = null;
+        /// <summary>
+        /// Description of the last FileIO error that occurred during file operations. Should be null if
+        /// there was no error or if the last error was already dismissed by the user
+        /// </summary>
         public string FileIOError
         {
             get { return m_FileIOError; }
@@ -181,6 +188,9 @@ namespace WeeklyGrinder
             }
         }
 
+        /// <summary>
+        /// Returns standard error icon (white cross in red field) as a bitmap source usable by WPF controls
+        /// </summary>
         public BitmapSource ErrorIconSource
         {
             get
@@ -190,6 +200,9 @@ namespace WeeklyGrinder
         }
 
         private List<DateTime> m_Weeks = new List<DateTime>();
+        /// <summary>
+        /// List of all weeks (represented by the date of Monday of that week) for which we have data
+        /// </summary>
         public List<DateTime> Weeks
         {
             get { return m_Weeks; }
@@ -197,6 +210,9 @@ namespace WeeklyGrinder
         }
 
         private int m_WeekIndex = -1;
+        /// <summary>
+        /// Index of the currently displayed week in the Weeks array
+        /// </summary>
         public int WeekIndex
         {
             get { return m_WeekIndex; }
@@ -207,11 +223,11 @@ namespace WeeklyGrinder
                 m_WeekIndex = value;
                 NotifyPropertyChange("WeekIndex");
                 WeekStartDay = Weeks[m_WeekIndex];
-                CanSplitLines = false;
                 IsJoiningLines = false;
             }
         }
 
+        #region INotifyPropertyChanged
         protected void NotifyPropertyChange(string prop)
         {
             var handler = PropertyChanged;
@@ -220,6 +236,7 @@ namespace WeeklyGrinder
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
+        #endregion
 
         public DataModel()
         {
@@ -233,6 +250,9 @@ namespace WeeklyGrinder
                 }).Start();
         }
 
+        /// <summary>
+        /// Parses the TimeTrack log file. Reads all the data and then focuses on the last week, for which there is data in the log file.
+        /// </summary>
         private void LoadLog()
         {
             List<string> errors = new List<string>();
@@ -304,6 +324,9 @@ namespace WeeklyGrinder
             }
         }
 
+        /// <summary>
+        /// Recalculates tasks for the week determined by the WeekStartDay property; updates CurrentWeekData property
+        /// </summary>
         public void UpdateCurrentWeekData()
         {
             // Compute week boundaries
@@ -320,13 +343,28 @@ namespace WeeklyGrinder
                     .GroupBy(t => t.TaskName, t => t.GetWorkedMinutes(), (key, days) => new WeekTaskData(weekStart, key, WeekTaskData.Condense(days)))
             );
 
-            WeekTaskData totals = new WeekTaskData(weekStart, "Totals", new int[7], true);
-            foreach (var tsk in CurrentWeekData)
-                totals = totals.MergeLine(tsk);
-            totals.TaskName = "Totals";
-            CurrentWeekData.Add(totals);
+            CurrentWeekData.Add(CalculateTotals());
         }
 
+        /// <summary>
+        /// Sums up all tasks and produces a record with total times for each day. The record has the IsTotals flag set.
+        /// </summary>
+        /// <returns>Aggregate record</returns>
+        private WeekTaskData CalculateTotals()
+        {
+            WeekTaskData totals = new WeekTaskData(WeekStartDay, "Totals", new int[7], true);
+            foreach (var tsk in CurrentWeekData.Where(t => !t.IsTotals()))
+                totals = totals.MergeLine(tsk);
+            totals.TaskName = "Totals";
+            return totals;
+        }
+
+        /// <summary>
+        /// Joins line with the given index to the line that is current join target. If the join target
+        /// is not set yet (right after clicking the Join button) then the line with the given index
+        /// will be selected as the target instead. The totals line cannot be joined.
+        /// </summary>
+        /// <param name="lineNo">Index of the line to be joined to the target, or of the target line itself if this is the first call after clicking Join</param>
         public void JoinLine(int lineNo)
         {
             // The last line contains daily totals and we don't want the user to join this line
@@ -349,9 +387,15 @@ namespace WeeklyGrinder
             // Update the index of the target line, if the deleted line was before it in the list
             if (lineNo < m_LineToJoinTo)
                 m_LineToJoinTo--;
-            CanSplitLines = true;
         }
 
+        /// <summary>
+        /// Delete all records from the log file. If requested, empty records (having 0 minutes each) will be
+        /// created in the new file, one for each distinct task. That way, the new log will contain no time
+        /// records, but all task names available for the user to select from the task name combo box (in the
+        /// TimeTrack program).
+        /// </summary>
+        /// <param name="keepTaskNames">If true, empty record for each task name will be created in the new log</param>
         public void ClearLog(bool keepTaskNames)
         {
             try
@@ -379,6 +423,106 @@ namespace WeeklyGrinder
             {
                 FileIOError = string.Format("Clearing the log raised the following error:{0}{0}{1} - {2}", Environment.NewLine, e.GetType().Name, e.Message);
             }
+        }
+
+        /// <summary>
+        /// Try to move time around between days, so that each workday (Mon to Fri) has at least 8 hours, while the
+        /// totals for each task and the overall weekly totals remain the same
+        /// </summary>
+        /// <returns>true if the values were equalized; false if it was not possible</returns>
+        public bool Equalize8()
+        {
+            var totalsLine = CurrentWeekData.Where(l => l.IsTotals()).First();
+            Dictionary<int, int> fund = new Dictionary<int, int>();
+            Dictionary<int, int> lacking = new Dictionary<int, int>();
+            for (int i = 0; i < 7; i++)
+            {
+                int min = totalsLine.GetWorkedMinutes()[i];
+                if (i < 5 && min > 8 * 60)
+                    fund.Add(i, min - 8 * 60);
+                else if (i < 5 && min < 8 * 60)
+                    lacking.Add(i, 8 * 60 - min);
+                else if (i >= 5 && min > 0)
+                    fund.Add(i, min);
+            }
+
+            if (fund.Values.Sum() < lacking.Values.Sum())
+                // Impossible to solve
+                return false;
+
+            // For each column that needs some time added
+            foreach (var receiver in lacking)
+            {
+                int lackingMinutes = receiver.Value;
+
+                // Order tasks so that those that have nonzero values in the receiver column come first. We'd prefer to
+                // just increase time of a task that really went on that day rather than introduce a new task.
+                var orderedTasks =
+                    CurrentWeekData
+                        .Where(t => !t.IsTotals())
+                        .Select((t, ind) => new { Task = t, Index = ind })
+                        .OrderBy(t => t.Task.GetWorkedMinutes()[receiver.Key])
+                        .Reverse()
+                        .ToList();    // ToList() needed to prevent lazy linq evaluation, which would result in an InvalidOperationException
+
+                foreach (var task in orderedTasks)
+                {
+                    var taskMinutes = task.Task.GetWorkedMinutes();
+                    // Try to find a column that could miss a few minutes for the given task
+                    var providers = fund.Where(f => f.Value > 0).Select(f => f.Key).ToList();
+                    foreach (int provider in providers)
+                    {
+                        int fundAvailable = fund[provider];
+                        if (fundAvailable == 0)
+                            continue;
+                        int transferTime = Minimum3(taskMinutes[provider], fundAvailable, lackingMinutes);
+                        if (transferTime == 0)
+                            continue;
+
+                        // Updating values in the taskMinutes array automatically updates task.Task
+                        taskMinutes[provider] -= transferTime;
+                        taskMinutes[receiver.Key] += transferTime;
+                        
+                        // the row values are now updated, but we still need to reinsert the row to the collection to get the DataGrid updated
+                        CurrentWeekData.Insert(task.Index, task.Task);
+                        CurrentWeekData.RemoveAt(task.Index + 1);
+
+                        fund[provider] -= transferTime;
+                        lackingMinutes -= transferTime;
+
+                        if (lackingMinutes == 0)
+                            break;
+                    }
+
+                    if (lackingMinutes == 0)
+                        break;
+                }
+            }
+
+            // Update daily totals
+
+            // Remove a totals record if it is already in the data
+            foreach (int index in
+                CurrentWeekData
+                    .Select((t, ind) => new { Index = ind, Task = t })
+                    .Where(t => t.Task.IsTotals())
+                    .Select(t => t.Index)
+                    .OrderBy(i => i)
+                    .Reverse()
+                    .ToList()  // ToList() needed to prevent lazy linq evaluation, which would result in an InvalidOperationException
+                    )
+                CurrentWeekData.RemoveAt(index);
+            // Insert a new totals record
+            CurrentWeekData.Add(CalculateTotals());
+
+            return true;
+        }
+
+        private static int Minimum3(int a, int b, int c)
+        {
+            return a < b ?
+                (a < c ? a : c) :
+                (b < c ? b : c);
         }
     }
 }

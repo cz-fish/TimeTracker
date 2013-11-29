@@ -83,7 +83,8 @@
             </DataGrid>
             <StackPanel Grid.Row="2" Orientation="Horizontal">
                 <Button Name="bJoin" Content="{Binding Path=JoinLinesButtonText}" Width="75" Click="bJoin_Click" Margin="5,10,5,10"/>
-                <Button Name="bSplit" Content="Split" Width="75" Click="bSplit_Click" Margin="5,10,5,10" IsEnabled="{Binding Path=CanSplitLines}"/>
+                <Button Name="bEqual" Content="Equalize 8" Width="75" Click="bEqual_Click" Margin="5,10,5,10"/>
+                <Button Name="bReset" Content="Reset" Width="75" Click="bReset_Click" Margin="5,10,5,10"/>
                 <Button Name="bClear" Content="Clear Log" Width="75" Click="bClear_Click" Margin="5,10,5,10"/>
             </StackPanel>
         </Grid>

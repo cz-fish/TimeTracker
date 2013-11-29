@@ -64,10 +64,9 @@ namespace WeeklyGrinder
             model.IsJoiningLines = !model.IsJoiningLines;
         }
 
-        private void bSplit_Click(object sender, RoutedEventArgs e)
+        private void bReset_Click(object sender, RoutedEventArgs e)
         {
             var model = DataContext as DataModel;
-            model.CanSplitLines = false;
             model.UpdateCurrentWeekData();
         }
 
@@ -93,6 +92,16 @@ namespace WeeklyGrinder
         {
             var model = DataContext as DataModel;
             model.FileIOError = null;
+        }
+
+        private void bEqual_Click(object sender, RoutedEventArgs e)
+        {
+            var model = DataContext as DataModel;
+            if (!model.Equalize8())
+            {
+                MessageBox.Show("The week doesn't have at least 40 hours in total. Thus it can't be reorganized so that each workday has at least 8 hours",
+                    "Not enough hours to reorganize", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
     }
 }
