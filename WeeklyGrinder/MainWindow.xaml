@@ -44,7 +44,7 @@
                 </Button>
             </Grid>
             <DataGrid Grid.Row="1" MinHeight="200" Margin="5,5,5,5" AutoGenerateColumns="True" ColumnWidth="*" ItemsSource="{Binding CurrentWeekData}" AutoGeneratingColumn="DataGrid_AutoGeneratingColumn"
-                  SelectionChanged="gData_SelectionChanged" CanUserReorderColumns="False" CanUserSortColumns="False" AlternatingRowBackground="LightGreen"
+                  SelectionChanged="gData_SelectionChanged" CanUserReorderColumns="False" CanUserSortColumns="False" AlternatingRowBackground="#f3f3f3"
                   Name="gData">
                 <DataGrid.CellStyle>
                     <Style TargetType="{x:Type DataGridCell}">
@@ -70,7 +70,7 @@
                         </Setter>
                         <Setter Property="DataGrid.FontStyle">
                             <Setter.Value>
-                                <MultiBinding Converter="{StaticResource cellFontweightConverter}" >
+                                <MultiBinding Converter="{StaticResource cellFontStyleConverter}" >
                                     <MultiBinding.Bindings>
                                         <Binding RelativeSource="{RelativeSource Self}"/>
                                         <Binding />

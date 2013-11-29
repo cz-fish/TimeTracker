@@ -145,7 +145,7 @@ namespace WeeklyGrinder
     {
         protected override object GetValueForTotalsCell()
         {
-            return new SolidColorBrush(Colors.LightGray);
+            return new SolidColorBrush(Colors.LightSkyBlue);
         }
 
         protected override object GetValueForZeroCell()
@@ -154,7 +154,7 @@ namespace WeeklyGrinder
         }
     }
 
-    public class CellFontWeightConverter : CellStyleConverter
+    public class CellFontStyleConverter : CellStyleConverter
     {
         protected override object GetValueForTotalsCell()
         {

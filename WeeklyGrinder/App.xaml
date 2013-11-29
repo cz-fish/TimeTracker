@@ -11,6 +11,6 @@
 
         <wg:CellForegroundConverter x:Key="cellForegroundConverter" />
         <wg:CellBackgroundConverter x:Key="cellBackgroundConverter" />
-        <wg:CellFontWeightConverter x:Key="cellFontweightConverter" />
+        <wg:CellFontStyleConverter x:Key="cellFontStyleConverter" />
     </Application.Resources>
 </Application>
