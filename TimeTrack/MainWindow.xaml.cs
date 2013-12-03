@@ -314,6 +314,7 @@ namespace TimeTrack
             ShowActivated = true;
 
             this.Visibility = System.Windows.Visibility.Visible;
+            Activate();
 
             // Set focus to the combobox and start editing text
             // For this to work, we need the window to be already loaded
