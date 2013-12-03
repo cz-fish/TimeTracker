@@ -35,6 +35,7 @@ namespace TimeTrack
         private DateTime m_Today = DateTime.Now.Date;
         private TimeSpan m_WorkedToday = new TimeSpan(0);
         private System.Threading.Timer m_TrayicoRefreshTimer;
+        private TextBox m_ComboTextBox;
 
         private ObservableCollection<string> m_TaskNames = new ObservableCollection<string>();
         public ObservableCollection<String> TaskNames
@@ -93,6 +94,22 @@ namespace TimeTrack
                     SwitchIconToStopped();
                 m_TrayicoRefreshTimer = new System.Threading.Timer(RefreshTrayico, null, 2 * 60 * 1000, 2 * 60 * 1000);
             }).Start();
+
+            // Make the window invisible and show it, just to load it. Then in the RootWindow_Loaded callback, put it back
+            Height = 0;
+            Width = 0;
+            WindowStyle = System.Windows.WindowStyle.None;
+            ShowInTaskbar = false;
+            ShowActivated = false;
+            Visibility = System.Windows.Visibility.Visible;
+        }
+
+        private void RootWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            m_ComboTextBox = (cbTask.Template.FindName("PART_EditableTextBox", cbTask) as TextBox);
+            HideTaskWindow();
+            // NOTE: We can't restore the window's size here, because it would flash for a quick moment.
+            //       It needs to be done in the ShowTaskWindow method.
         }
 
         private void RefreshTrayico(object state)
@@ -136,8 +153,7 @@ namespace TimeTrack
                 m_Task = string.Empty;
                 RecalcTask();
 
-                // Show the task window
-                this.Visibility = System.Windows.Visibility.Visible;
+                ShowTaskWindow();
             }
         }
 
@@ -168,7 +184,7 @@ namespace TimeTrack
                 SwitchIconToStopped();
             }
 
-            this.Visibility = System.Windows.Visibility.Hidden;
+            HideTaskWindow();
 
             if (!m_TaskNames.Contains(m_Task))
             {
@@ -182,14 +198,14 @@ namespace TimeTrack
             if (MessageBox.Show("Are you sure that you want to ignore this time interval?", "Ignore time interval", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.No)
                 return;
 
-            this.Visibility = System.Windows.Visibility.Hidden;
+            HideTaskWindow();
         }
 
         private void bContinue_Click(object sender, RoutedEventArgs e)
         {
             m_Recording = true;
             SwitchIconToRecording();
-            this.Visibility = System.Windows.Visibility.Hidden;
+            HideTaskWindow();
         }
 
         private void dtTo_TextChanged(object sender, TextChangedEventArgs e)
@@ -286,6 +302,32 @@ namespace TimeTrack
             if (m_Recording)
                 uncommitted = DateTime.Now - m_RecordStart;
             return (WorkedToday + uncommitted).TotalHours;
+        }
+
+        private void ShowTaskWindow()
+        {
+            // Make sure the window will be visible once shown
+            Height = 220;
+            Width = 300;
+            WindowStyle = System.Windows.WindowStyle.SingleBorderWindow;
+            ShowInTaskbar = true;
+            ShowActivated = true;
+
+            this.Visibility = System.Windows.Visibility.Visible;
+
+            // Set focus to the combobox and start editing text
+            // For this to work, we need the window to be already loaded
+            if (m_ComboTextBox != null)
+            {
+                m_ComboTextBox.Focus();
+                m_ComboTextBox.SelectionStart = 0;
+                m_ComboTextBox.SelectionLength = m_ComboTextBox.Text.Length;
+            }
+        }
+
+        private void HideTaskWindow()
+        {
+            this.Visibility = System.Windows.Visibility.Hidden;
         }
     }
 }

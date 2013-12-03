@@ -1,7 +1,9 @@
+-- Todo ----
+
 TimeTrack:
   + Context menu on right click on the tray icon with exit option
-  + Do not exit the application by closing the task window
   + Move TimeTracker window to front when it's made visible
+  + Sort options in the dropdown combo
 
 WeeklyGrinder:
 
@@ -10,6 +12,8 @@ WeeklyGrinder:
 TimeTrack:
   + Nicer tray icons
     + Render total hours worked today to the tray icon
+  + Number on the icon is not refreshed immediately when I start the first task on a day
+  + Save task as the default button (enter saves the task)
 
 WeeklyGrinder:
   + combine (sum up) multiple tasks together
@@ -17,3 +21,8 @@ WeeklyGrinder:
   + navigate through weeks
   + dim zero values
   + add Totals line to the data grid with sum in each column
+
+-- NoFix ----
+
+TimeTrack:
+  + Do not exit the application by closing the task window
