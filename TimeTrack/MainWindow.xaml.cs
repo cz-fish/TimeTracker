@@ -111,6 +111,13 @@ namespace TimeTrack
                 return;
             }
 
+            // Update the date of "today" if it changed since the last task
+            if (DateTime.Now.Date > m_Today)
+            {
+                m_Today = DateTime.Now.Date;
+                WorkedToday = new TimeSpan(0);
+            }
+
             m_Recording = !m_Recording;
             if (m_Recording)
             {
@@ -122,13 +129,6 @@ namespace TimeTrack
                 // Stop recording
                 SwitchIconToStopped();
                 m_RecordStop = DateTime.Now;
-
-                // Update the date of "today" if it changed since the last task
-                if (DateTime.Now.Date > m_Today)
-                {
-                    m_Today = DateTime.Now.Date;
-                    WorkedToday = new TimeSpan(0);
-                }
 
                 // Calculate the task's length
                 dtFrom.Text = m_RecordStart.ToString("g");
