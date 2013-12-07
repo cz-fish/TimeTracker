@@ -80,6 +80,16 @@ namespace TimeTrack
         public MainWindow()
         {
             DATA_FILE_PATH = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.None), DATA_FILE_NAME);
+            
+            // Make the collection view source for combobox items update every time the TaskNames change
+            TaskNames.CollectionChanged +=
+               (sender, e) =>
+               {
+                   CollectionViewSource viewSource =
+                       FindResource("cvs") as CollectionViewSource;
+                   viewSource.View.Refresh();
+               };
+
             InitializeComponent();
         }
 
@@ -268,7 +278,7 @@ namespace TimeTrack
                         string taskName = parts[5];
 
                         if (!string.IsNullOrWhiteSpace(taskName) && !newTasks.Contains(taskName))
-                            newTasks.Insert(pos, taskName);
+                            newTasks.Add(taskName);
 
                         DateTime today = DateTime.Now.Date;
                         if (date == today)
