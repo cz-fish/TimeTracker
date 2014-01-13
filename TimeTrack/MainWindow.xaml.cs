@@ -36,6 +36,7 @@ namespace TimeTrack
         private TimeSpan m_WorkedToday = new TimeSpan(0);
         private System.Threading.Timer m_TrayicoRefreshTimer;
         private TextBox m_ComboTextBox;
+        private IconManager m_IconManager = new IconManager();
 
         private ObservableCollection<string> m_TaskNames = new ObservableCollection<string>();
         public ObservableCollection<String> TaskNames
@@ -296,13 +297,13 @@ namespace TimeTrack
 
         private void SwitchIconToRecording()
         {
-            TaskbarIcon.Icon = IconPainter.GetRecordingIcon(GetCurrentTodaysHours());
+            TaskbarIcon.Icon = m_IconManager.GetRecordingIcon(GetCurrentTodaysHours());
             IconTooltip = string.Format("Recording time since {0}. Click to stop", m_RecordStart.ToString("HH:mm"));
         }
 
         private void SwitchIconToStopped()
         {
-            TaskbarIcon.Icon = IconPainter.GetStoppedIcon(GetCurrentTodaysHours());
+            TaskbarIcon.Icon = m_IconManager.GetStoppedIcon(GetCurrentTodaysHours());
             IconTooltip = "Not recording time. Click to start";
         }
 

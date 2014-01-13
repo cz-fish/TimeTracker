@@ -13,7 +13,7 @@ namespace TimeTrack
         private static Brush m_BlueBrush = new LinearGradientBrush(m_Rect, Color.Blue, Color.BlueViolet, 45);
         private static Brush m_RedBrush = new LinearGradientBrush(m_Rect, Color.Red, Color.OrangeRed, 45);
 
-        public static Icon GetRecordingIcon(double workedHours)
+        public static IntPtr GetRecordingIcon(double workedHours)
         {
             return DrawIcon((g, part) =>
                 {
@@ -35,7 +35,7 @@ namespace TimeTrack
                 }, workedHours);
         }
 
-        public static Icon GetStoppedIcon(double workedHours)
+        public static IntPtr GetStoppedIcon(double workedHours)
         {
             return DrawIcon((g, part) =>
                 {
@@ -47,7 +47,7 @@ namespace TimeTrack
                 }, workedHours);
         }
 
-        private static Icon DrawIcon(Action<Graphics, double> moreDrawing, double value)
+        private static IntPtr DrawIcon(Action<Graphics, double> moreDrawing, double value)
         {
             int wholeHours = (int)Math.Floor(value);
             var bmp = new Bitmap(16, 16);
@@ -59,7 +59,8 @@ namespace TimeTrack
             int endCoord = (int)(16 * (value - wholeHours));
             g.Flush();
             bmp.MakeTransparent();
-            return System.Drawing.Icon.FromHandle(bmp.GetHicon());
+
+            return bmp.GetHicon();
         }
     }
 }

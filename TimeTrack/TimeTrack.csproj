@@ -57,6 +57,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="IconManager.cs" />
     <Compile Include="IconPainter.cs" />
     <Compile Include="ToggleRecordingCommand.cs" />
     <Page Include="MainWindow.xaml">
