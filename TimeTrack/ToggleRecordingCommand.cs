@@ -14,7 +14,12 @@ namespace TimeTrack
             return (parameter is MainWindow);
         }
 
-        public event EventHandler CanExecuteChanged;
+        // Ignored
+        public event EventHandler CanExecuteChanged
+        {
+            add { }
+            remove { }
+        }
 
         public void Execute(object parameter)
         {
