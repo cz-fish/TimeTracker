@@ -16,43 +16,48 @@ namespace WeeklyGrinder
     {
         // Each public property is a column in the DataGrid
         public string TaskName { get; set; }
-        public string Mon { get { return ((decimal)WorkedMinutes[0] / 60.0m).ToString("0.00"); } }
-        public string Tue { get { return ((decimal)WorkedMinutes[1] / 60.0m).ToString("0.00"); } }
-        public string Wed { get { return ((decimal)WorkedMinutes[2] / 60.0m).ToString("0.00"); } }
-        public string Thu { get { return ((decimal)WorkedMinutes[3] / 60.0m).ToString("0.00"); } }
-        public string Fri { get { return ((decimal)WorkedMinutes[4] / 60.0m).ToString("0.00"); } }
-        public string Sat { get { return ((decimal)WorkedMinutes[5] / 60.0m).ToString("0.00"); } }
-        public string Sun { get { return ((decimal)WorkedMinutes[6] / 60.0m).ToString("0.00"); } }
-        public string Weekly { get { return ((decimal)WorkedMinutes.Sum() / 60.0m).ToString("0.00"); } }
+        public string Mon { get { return HoursToString(WorkedHours[0]); } }
+        public string Tue { get { return HoursToString(WorkedHours[1]); } }
+        public string Wed { get { return HoursToString(WorkedHours[2]); } }
+        public string Thu { get { return HoursToString(WorkedHours[3]); } }
+        public string Fri { get { return HoursToString(WorkedHours[4]); } }
+        public string Sat { get { return HoursToString(WorkedHours[5]); } }
+        public string Sun { get { return HoursToString(WorkedHours[6]); } }
+        public string Weekly { get { return HoursToString(WorkedHours.Sum()); } }
+
+        private string HoursToString(decimal hours)
+        {
+            return hours.ToString("0.00");
+        }
 
         // This property doesn't have a public getter so that it's not displayed as a column in the DataGrid.
-        // Use the GetWorkedMinutes() method instead
-        public int[] WorkedMinutes { private get; set; }
-        public int[] GetWorkedMinutes()
+        // Use the GetWorkedHours() method instead
+        public decimal[] WorkedHours { private get; set; }
+        public decimal[] GetWorkedHours()
         {
-            return WorkedMinutes;
+            return WorkedHours;
         }
         public DateTime WeekStart { private get; set; }
 
-        public WeekTaskData(string taskName, int dayIndex, int minutes, bool isTotals = false)
+        public WeekTaskData(string taskName, int dayIndex, decimal hours, bool isTotals = false)
         {
             TaskName = taskName;
-            WorkedMinutes = new int[7];
-            WorkedMinutes[dayIndex] = minutes;
+            WorkedHours = new decimal[7];
+            WorkedHours[dayIndex] = hours;
             m_IsTotals = isTotals;
         }
 
-        public WeekTaskData(DateTime weekStart, string taskName, int[] workedMinutes, bool isTotals = false)
+        public WeekTaskData(DateTime weekStart, string taskName, decimal[] hours, bool isTotals = false)
         {
             WeekStart = weekStart;
             TaskName = taskName;
-            WorkedMinutes = workedMinutes;
+            WorkedHours = hours;
             m_IsTotals = isTotals;
         }
 
-        public static int[] Condense(IEnumerable<int[]> dayData)
+        public static decimal[] Condense(IEnumerable<decimal[]> dayData)
         {
-            int[] result = new int[7];
+            decimal[] result = new decimal[7];
             foreach (var i in dayData)
                 for (int j = 0; j < 7; j++)
                     result[j] += i[j];
@@ -86,7 +91,7 @@ namespace WeeklyGrinder
             TaskName += " + " + other.TaskName;
             for (int i = 0; i < 7; i++)
             {
-                WorkedMinutes[i] += other.WorkedMinutes[i];
+                WorkedHours[i] += other.WorkedHours[i];
             }
             return this;
         }
@@ -104,9 +109,9 @@ namespace WeeklyGrinder
         public const string DATA_FILE_NAME = "TimeTrack.txt";
 
         /// <summary>
-        /// Maps date and task name to minutes spent on the given day with the given task
+        /// Maps date and task name to hours spent on the given day with the given task
         /// </summary>
-        private Dictionary<KeyValuePair<DateTime, string>, int> m_TaskTimes = new Dictionary<KeyValuePair<DateTime, string>, int>();
+        private Dictionary<KeyValuePair<DateTime, string>, decimal> m_TaskTimes = new Dictionary<KeyValuePair<DateTime, string>, decimal>();
         private ObservableCollection<WeekTaskData> m_CurrentWeekData;
         /// <summary>
         /// A subset of TaskTimes for the current week (determined by WeekStartDay)
@@ -293,7 +298,7 @@ namespace WeeklyGrinder
                         {
                             m_TaskTimes.Add(key, 0);
                         }
-                        m_TaskTimes[key] += minutes;
+                        m_TaskTimes[key] += MinutesToHours(minutes);
 
                         weeks.Add(WeekTitleConverter.GetWeekStartDay(date));
                     }
@@ -324,6 +329,11 @@ namespace WeeklyGrinder
             }
         }
 
+        private static decimal MinutesToHours(int minutes)
+        {
+            return Decimal.Round(((decimal)minutes) / 60m, 2);
+        }
+
         /// <summary>
         /// Recalculates tasks for the week determined by the WeekStartDay property; updates CurrentWeekData property
         /// </summary>
@@ -340,7 +350,7 @@ namespace WeeklyGrinder
                     // Create a partial WeekTaskData structure for each task and day
                     .Select(t => new WeekTaskData(t.Key.Value, (t.Key.Key - weekStart).Days, t.Value))
                     // Group partial day records of the same tasks together
-                    .GroupBy(t => t.TaskName, t => t.GetWorkedMinutes(), (key, days) => new WeekTaskData(weekStart, key, WeekTaskData.Condense(days)))
+                    .GroupBy(t => t.TaskName, t => t.GetWorkedHours(), (key, days) => new WeekTaskData(weekStart, key, WeekTaskData.Condense(days)))
             );
 
             CurrentWeekData.Add(CalculateTotals());
@@ -352,7 +362,7 @@ namespace WeeklyGrinder
         /// <returns>Aggregate record</returns>
         private WeekTaskData CalculateTotals()
         {
-            WeekTaskData totals = new WeekTaskData(WeekStartDay, "Totals", new int[7], true);
+            WeekTaskData totals = new WeekTaskData(WeekStartDay, "Totals", new decimal[7], true);
             foreach (var tsk in CurrentWeekData.Where(t => !t.IsTotals()))
                 totals = totals.MergeLine(tsk);
             totals.TaskName = "Totals";
@@ -433,17 +443,17 @@ namespace WeeklyGrinder
         public bool Equalize8()
         {
             var totalsLine = CurrentWeekData.Where(l => l.IsTotals()).First();
-            Dictionary<int, int> fund = new Dictionary<int, int>();
-            Dictionary<int, int> lacking = new Dictionary<int, int>();
+            Dictionary<int, decimal> fund = new Dictionary<int, decimal>();
+            Dictionary<int, decimal> lacking = new Dictionary<int, decimal>();
             for (int i = 0; i < 7; i++)
             {
-                int min = totalsLine.GetWorkedMinutes()[i];
-                if (i < 5 && min > 8 * 60)
-                    fund.Add(i, min - 8 * 60);
-                else if (i < 5 && min < 8 * 60)
-                    lacking.Add(i, 8 * 60 - min);
-                else if (i >= 5 && min > 0)
-                    fund.Add(i, min);
+                decimal hours = totalsLine.GetWorkedHours()[i];
+                if (i < 5 && hours > 8m)
+                    fund.Add(i, hours - 8m);
+                else if (i < 5 && hours < 8m)
+                    lacking.Add(i, 8m - hours);
+                else if (i >= 5 && hours > 0)
+                    fund.Add(i, hours);
             }
 
             if (fund.Values.Sum() < lacking.Values.Sum())
@@ -453,7 +463,7 @@ namespace WeeklyGrinder
             // For each column that needs some time added
             foreach (var receiver in lacking)
             {
-                int lackingMinutes = receiver.Value;
+                decimal lackingHours = receiver.Value;
 
                 // Order tasks so that those that have nonzero values in the receiver column come first. We'd prefer to
                 // just increase time of a task that really went on that day rather than introduce a new task.
@@ -461,40 +471,40 @@ namespace WeeklyGrinder
                     CurrentWeekData
                         .Where(t => !t.IsTotals())
                         .Select((t, ind) => new { Task = t, Index = ind })
-                        .OrderBy(t => t.Task.GetWorkedMinutes()[receiver.Key])
+                        .OrderBy(t => t.Task.GetWorkedHours()[receiver.Key])
                         .Reverse()
                         .ToList();    // ToList() needed to prevent lazy linq evaluation, which would result in an InvalidOperationException
 
                 foreach (var task in orderedTasks)
                 {
-                    var taskMinutes = task.Task.GetWorkedMinutes();
+                    var taskHours = task.Task.GetWorkedHours();
                     // Try to find a column that could miss a few minutes for the given task
                     var providers = fund.Where(f => f.Value > 0).Select(f => f.Key).ToList();
                     foreach (int provider in providers)
                     {
-                        int fundAvailable = fund[provider];
+                        decimal fundAvailable = fund[provider];
                         if (fundAvailable == 0)
                             continue;
-                        int transferTime = Minimum3(taskMinutes[provider], fundAvailable, lackingMinutes);
+                        decimal transferTime = Minimum3(taskHours[provider], fundAvailable, lackingHours);
                         if (transferTime == 0)
                             continue;
 
-                        // Updating values in the taskMinutes array automatically updates task.Task
-                        taskMinutes[provider] -= transferTime;
-                        taskMinutes[receiver.Key] += transferTime;
+                        // Updating values in the taskHours array automatically updates task.Task
+                        taskHours[provider] -= transferTime;
+                        taskHours[receiver.Key] += transferTime;
                         
                         // the row values are now updated, but we still need to reinsert the row to the collection to get the DataGrid updated
                         CurrentWeekData.Insert(task.Index, task.Task);
                         CurrentWeekData.RemoveAt(task.Index + 1);
 
                         fund[provider] -= transferTime;
-                        lackingMinutes -= transferTime;
+                        lackingHours -= transferTime;
 
-                        if (lackingMinutes == 0)
+                        if (lackingHours == 0)
                             break;
                     }
 
-                    if (lackingMinutes == 0)
+                    if (lackingHours == 0)
                         break;
                 }
             }
@@ -518,7 +528,7 @@ namespace WeeklyGrinder
             return true;
         }
 
-        private static int Minimum3(int a, int b, int c)
+        private static decimal Minimum3(decimal a, decimal b, decimal c)
         {
             return a < b ?
                 (a < c ? a : c) :

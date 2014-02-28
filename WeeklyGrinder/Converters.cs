@@ -110,7 +110,7 @@ namespace WeeklyGrinder
                 {
                     return GetValueForTotalsCell();
                 }
-                else if (index > 0 && index < 8 && data.GetWorkedMinutes()[index - 1] == 0.0m)
+                else if (index > 0 && index < 8 && data.GetWorkedHours()[index - 1] == 0.0m)
                 {
                     return GetValueForZeroCell();
                 }
