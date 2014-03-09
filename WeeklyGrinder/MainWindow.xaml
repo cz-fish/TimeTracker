@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:wg="clr-namespace:WeeklyGrinder"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
-        Title="MainWindow" Height="350" Width="525" MinHeight="300" MinWidth="350">
+        Title="TimeTrack Weekly Grinder" Height="350" Width="525" MinHeight="300" MinWidth="350">
     
     <Window.DataContext>
         <wg:DataModel></wg:DataModel>
