@@ -113,5 +113,24 @@ namespace WeeklyGrinder
                     "You work too much!", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+
+        private void gData_CurrentCellChanged(object sender, EventArgs e)
+        {
+            var model = DataContext as DataModel;
+
+            if (gData.CurrentCell != null && gData.CurrentCell.Column != null)
+            {
+                int col = gData.CurrentCell.Column.DisplayIndex - 1;
+                if (col < 0 || col > 6)
+                {
+                    model.SelectedCellDetail = string.Empty;
+                }
+                else
+                {
+                    var selected = gData.CurrentCell.Item as WeekTaskData;
+                    model.SelectedCellDetail = string.Join(Environment.NewLine, selected.GetPartialTaskDescriptions(col).ToArray());
+                }
+            }
+        }
     }
 }

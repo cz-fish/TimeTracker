@@ -86,13 +86,17 @@ namespace WeeklyGrinder
                 return propName;
         }
 
-        public WeekTaskData MergeLine(WeekTaskData other)
+        public WeekTaskData MergeLine(WeekTaskData other, bool doNotTransfer = false)
         {
-            TaskName += " + " + other.TaskName;
             for (int i = 0; i < 7; i++)
             {
+                if (!doNotTransfer)
+                {
+                    TransferPartialTask(other, this, i, i, other.WorkedHours[i]);
+                }
                 WorkedHours[i] += other.WorkedHours[i];
             }
+            TaskName += " + " + other.TaskName;
             return this;
         }
 
@@ -100,6 +104,61 @@ namespace WeeklyGrinder
         public bool IsTotals()
         {
             return m_IsTotals;
+        }
+
+        private class PartialTask
+        {
+            public decimal Hours { get; set; }
+            public string Name { get; set; }
+            public override string ToString()
+            {
+                return string.Format("{0:0.00}: {1}", Hours, Name);
+            }
+        }
+
+        private List<PartialTask>[] m_PartialTasks = new List<PartialTask>[7];
+
+        public List<string> GetPartialTaskDescriptions(int weekday)
+        {
+            var partTasks = m_PartialTasks[weekday] ?? GetDefaultPartialTask(weekday);
+            return partTasks.Where(pt => pt.Hours > 0m)
+                            .Select(pt => pt.ToString()).ToList();
+        }
+
+        private List<PartialTask> GetDefaultPartialTask(int weekday)
+        {
+            return new List<PartialTask>() {new PartialTask() {Hours = WorkedHours[weekday], Name = TaskName}};
+        }
+
+        public static void TransferPartialTask(WeekTaskData sourceTask, WeekTaskData destTask, int sourceDay, int destDay, decimal amount)
+        {
+            var sourcePartTasks = sourceTask.m_PartialTasks[sourceDay] ?? sourceTask.GetDefaultPartialTask(sourceDay);
+            var destPartTasks = destTask.m_PartialTasks[destDay] ?? destTask.GetDefaultPartialTask(destDay);
+            foreach (var pt in sourcePartTasks)
+            {
+                decimal transferAmount = amount < pt.Hours ? amount : pt.Hours;
+                amount -= transferAmount;
+                pt.Hours -= transferAmount;
+                bool newPt = true;
+                foreach (var destPt in destPartTasks)
+                {
+                    if (destPt.Name == pt.Name)
+                    {
+                        destPt.Hours += transferAmount;
+                        newPt = false;
+                        break;
+                    }
+                }
+                if (newPt)
+                {
+                    destPartTasks.Add(new PartialTask() { Hours = transferAmount, Name = pt.Name });
+                }
+
+                if (amount == 0m)
+                    break;
+            }
+            sourceTask.m_PartialTasks[sourceDay] = sourcePartTasks;
+            destTask.m_PartialTasks[destDay] = destPartTasks;
         }
     }
 
@@ -230,6 +289,17 @@ namespace WeeklyGrinder
                 NotifyPropertyChange("WeekIndex");
                 WeekStartDay = Weeks[m_WeekIndex];
                 IsJoiningLines = false;
+            }
+        }
+
+        private string m_SelectedCellDetail;
+        public string SelectedCellDetail
+        {
+            get { return m_SelectedCellDetail; }
+            set
+            {
+                m_SelectedCellDetail = value;
+                NotifyPropertyChange("SelectedCellDetail");
             }
         }
 
@@ -365,7 +435,7 @@ namespace WeeklyGrinder
         {
             WeekTaskData totals = new WeekTaskData(WeekStartDay, "Totals", new decimal[7], true);
             foreach (var tsk in CurrentWeekData.Where(t => !t.IsTotals()))
-                totals = totals.MergeLine(tsk);
+                totals = totals.MergeLine(tsk, true);
             totals.TaskName = "Totals";
             return totals;
         }
@@ -515,7 +585,6 @@ namespace WeeklyGrinder
                         if (transferTime == 0)
                             continue;
 
-                        // Updating values in the taskHours array automatically updates task.Task
                         TransferTime(task.Task, provider, receiver.Key, transferTime);
 
                         // the row values are now updated, but we still need to reinsert the row to the collection to get the DataGrid updated
@@ -595,6 +664,7 @@ namespace WeeklyGrinder
 
         private void TransferTime(WeekTaskData task, int source, int dest, decimal amount)
         {
+            WeekTaskData.TransferPartialTask(task, task, source, dest, amount);
             var hours = task.GetWorkedHours();
             hours[source] -= amount;
             hours[dest] += amount;

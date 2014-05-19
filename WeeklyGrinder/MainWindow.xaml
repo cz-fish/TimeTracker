@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:wg="clr-namespace:WeeklyGrinder"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
-        Title="TimeTrack Weekly Grinder" Height="350" Width="525" MinHeight="300" MinWidth="350">
+        Title="TimeTrack Weekly Grinder" Height="450" Width="525" MinHeight="300" MinWidth="350">
     
     <Window.DataContext>
         <wg:DataModel></wg:DataModel>
@@ -22,6 +22,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="auto" />
                 <RowDefinition Height="auto" />
             </Grid.RowDefinitions>
 
@@ -44,7 +45,7 @@
                 </Button>
             </Grid>
             <DataGrid Grid.Row="1" MinHeight="200" Margin="5,5,5,5" AutoGenerateColumns="True" ColumnWidth="*" ItemsSource="{Binding CurrentWeekData}" AutoGeneratingColumn="DataGrid_AutoGeneratingColumn"
-                  SelectionChanged="gData_SelectionChanged" CanUserReorderColumns="False" CanUserSortColumns="False" AlternatingRowBackground="#f3f3f3"
+                  SelectionChanged="gData_SelectionChanged" CanUserReorderColumns="False" CanUserSortColumns="False" AlternatingRowBackground="#f3f3f3" CurrentCellChanged="gData_CurrentCellChanged"
                   Name="gData">
                 <DataGrid.CellStyle>
                     <Style TargetType="{x:Type DataGridCell}">
@@ -88,6 +89,8 @@
                 <Button Name="bReset" Content="Reset" Width="75" Click="bReset_Click" Margin="5,10,5,10"/>
                 <Button Name="bClear" Content="Clear Log" Width="75" Click="bClear_Click" Margin="5,10,5,10"/>
             </StackPanel>
+            
+            <TextBox Grid.Row="3" Height="70" Text="{Binding Path=SelectedCellDetail}" Margin="5,5,5,5" IsReadOnly="True" VerticalScrollBarVisibility="Auto"/>
         </Grid>
         
         <Grid HorizontalAlignment="Center" VerticalAlignment="Top">
