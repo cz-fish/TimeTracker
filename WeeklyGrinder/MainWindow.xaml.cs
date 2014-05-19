@@ -99,8 +99,18 @@ namespace WeeklyGrinder
             var model = DataContext as DataModel;
             if (!model.Equalize8())
             {
-                MessageBox.Show("The week doesn't have at least 40 hours in total. Thus it can't be reorganized so that each workday has at least 8 hours",
+                MessageBox.Show("The week doesn't have at least 40 hours in total. Thus it can't be reorganized so that each workday has at least 8 hours.",
                     "Not enough hours to reorganize", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private void bEliminate_Click(object sender, RoutedEventArgs e)
+        {
+            var model = DataContext as DataModel;
+            if (!model.EliminateWeekend())
+            {
+                MessageBox.Show("The week has too many hours; we can't move them all to week days without exceeding daily limit.",
+                    "You work too much!", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
     }

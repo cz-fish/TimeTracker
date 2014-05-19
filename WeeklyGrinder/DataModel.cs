@@ -107,6 +107,7 @@ namespace WeeklyGrinder
     {
         public readonly string DATA_FILE_PATH;
         public const string DATA_FILE_NAME = "TimeTrack.txt";
+        public const decimal DailyMax = 24m;
 
         /// <summary>
         /// Maps date and task name to hours spent on the given day with the given task
@@ -460,6 +461,31 @@ namespace WeeklyGrinder
                 // Impossible to solve
                 return false;
 
+            SatisfyWorkdays(fund, lacking);
+            ReinsertTotals();
+
+            return true;
+        }
+
+        private void ReinsertTotals()
+        {
+            // Remove a totals record if it is already in the data
+            foreach (int index in
+                CurrentWeekData
+                    .Select((t, ind) => new { Index = ind, Task = t })
+                    .Where(t => t.Task.IsTotals())
+                    .Select(t => t.Index)
+                    .OrderBy(i => i)
+                    .Reverse()
+                    .ToList()  // ToList() needed to prevent lazy linq evaluation, which would result in an InvalidOperationException
+                    )
+                CurrentWeekData.RemoveAt(index);
+            // Insert a new totals record
+            CurrentWeekData.Add(CalculateTotals());
+        }
+
+        private void SatisfyWorkdays(Dictionary<int, decimal> fund, Dictionary<int, decimal> lacking)
+        {
             // For each column that needs some time added
             foreach (var receiver in lacking)
             {
@@ -490,9 +516,8 @@ namespace WeeklyGrinder
                             continue;
 
                         // Updating values in the taskHours array automatically updates task.Task
-                        taskHours[provider] -= transferTime;
-                        taskHours[receiver.Key] += transferTime;
-                        
+                        TransferTime(task.Task, provider, receiver.Key, transferTime);
+
                         // the row values are now updated, but we still need to reinsert the row to the collection to get the DataGrid updated
                         CurrentWeekData.Insert(task.Index, task.Task);
                         CurrentWeekData.RemoveAt(task.Index + 1);
@@ -508,23 +533,56 @@ namespace WeeklyGrinder
                         break;
                 }
             }
+        }
 
-            // Update daily totals
+        /// <summary>
+        /// Moves all time away from weekend to week days
+        /// </summary>
+        public bool EliminateWeekend()
+        {
+            var totalsLine = CurrentWeekData.Where(l => l.IsTotals()).First();
+            if (totalsLine.GetWorkedHours().Sum() > 5 * DailyMax)
+                // You work too much! (It's impossible to move all time away from weekend)
+                return false;
 
-            // Remove a totals record if it is already in the data
-            foreach (int index in
-                CurrentWeekData
-                    .Select((t, ind) => new { Index = ind, Task = t })
-                    .Where(t => t.Task.IsTotals())
-                    .Select(t => t.Index)
-                    .OrderBy(i => i)
-                    .Reverse()
-                    .ToList()  // ToList() needed to prevent lazy linq evaluation, which would result in an InvalidOperationException
-                    )
-                CurrentWeekData.RemoveAt(index);
-            // Insert a new totals record
-            CurrentWeekData.Add(CalculateTotals());
+            var totals = totalsLine.GetWorkedHours();
+            if (totals[5] == 0m && totals[6] == 0m)
+                return true;
 
+            for (int i = 0; i < CurrentWeekData.Count; i++)
+            {
+                var task = CurrentWeekData[i];
+                if (task.IsTotals())
+                    continue;
+
+                var hours = task.GetWorkedHours();
+                // Foreach weekend day
+                for (int source = 5; source <= 6; source++)
+                {
+                    // How much time does the source column need to get rid of?
+                    decimal amount = hours[source];
+                    // Foreach work day
+                    for (int target = 4; amount > 0m && target >= 0; target--)
+                    {
+                        // How much more time can the target column accept so that doesn't exceed DailyMax?
+                        decimal accepted = DailyMax - totals[target];
+                        decimal transferTime = amount < accepted? amount: accepted;
+                        if (transferTime > 0m)
+                        {
+                            TransferTime(task, source, target, transferTime);
+                            amount -= transferTime;
+                            totals[source] -= transferTime;
+                            totals[target] += transferTime;
+                        }
+                    }
+                }
+
+                // Reinsert the current task to notify the data grid that data was updated
+                CurrentWeekData.Insert(i, task);
+                CurrentWeekData.RemoveAt(i + 1);
+            }
+
+            ReinsertTotals();
             return true;
         }
 
@@ -533,6 +591,13 @@ namespace WeeklyGrinder
             return a < b ?
                 (a < c ? a : c) :
                 (b < c ? b : c);
+        }
+
+        private void TransferTime(WeekTaskData task, int source, int dest, decimal amount)
+        {
+            var hours = task.GetWorkedHours();
+            hours[source] -= amount;
+            hours[dest] += amount;
         }
     }
 }
