@@ -12,6 +12,7 @@
     <Grid>
         <Grid>
             <Grid.Visibility>
+                <!-- hide this grid if there is an error message -->
                 <Binding Path="FileIOError" Converter="{StaticResource VisibleIfError}">
                     <Binding.ConverterParameter>
                         <sys:Boolean>false</sys:Boolean>
@@ -33,9 +34,9 @@
                     <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
                 <Button Content="&lt;" Name="PrevWeek" Click="PrevWeek_Click" Grid.Column="0" Width="75" Margin="5,5,5,5"
-                        IsEnabled="{Binding Path=WeekIndex, Converter={StaticResource EnabledIfNotFirst}}" />
+                        IsEnabled="{Binding Path=WeekIndex, Converter={StaticResource EnabledIfNotFirst}}" ToolTip="Previous week" />
                 <Label Name="WeekFromTo" HorizontalAlignment="Center" Grid.Column="1" Content="{Binding Path=WeekStartDay, Converter={StaticResource WeekTitleConverter}}" Margin="5,5,5,5" Width="auto"/>
-                <Button Content="&gt;" Name="NextWeek" Click="NextWeek_Click" Grid.Column="2" Width="75" Margin="5,5,5,5">
+                <Button Content="&gt;" Name="NextWeek" Click="NextWeek_Click" Grid.Column="2" Width="75" Margin="5,5,5,5" ToolTip="Next week">
                     <Button.IsEnabled>
                         <MultiBinding Converter="{StaticResource EnabledIfNotLast}">
                             <Binding Path="WeekIndex"/>
@@ -44,7 +45,7 @@
                     </Button.IsEnabled>
                 </Button>
             </Grid>
-            <DataGrid Grid.Row="1" MinHeight="200" Margin="5,5,5,5" AutoGenerateColumns="True" ColumnWidth="*" ItemsSource="{Binding CurrentWeekData}" AutoGeneratingColumn="DataGrid_AutoGeneratingColumn"
+            <DataGrid Grid.Row="1" MinHeight="200" Margin="5,5,5,5" AutoGenerateColumns="True" ColumnWidth="*" ItemsSource="{Binding CurrentWeekData}" AutoGeneratingColumn="gData_AutoGeneratingColumn"
                   SelectionChanged="gData_SelectionChanged" CanUserReorderColumns="False" CanUserSortColumns="False" AlternatingRowBackground="#f3f3f3" CurrentCellChanged="gData_CurrentCellChanged"
                   Name="gData">
                 <DataGrid.CellStyle>
@@ -83,11 +84,11 @@
                 </DataGrid.CellStyle>
             </DataGrid>
             <StackPanel Grid.Row="2" Orientation="Horizontal">
-                <Button Name="bJoin" Content="{Binding Path=JoinLinesButtonText}" Width="75" Click="bJoin_Click" Margin="5,10,5,10"/>
-                <Button Name="bEqual" Content="Equalize 8" Width="75" Click="bEqual_Click" Margin="5,10,5,10"/>
-                <Button Name="bEliminate" Content="0 Weekend" Width="75" Click="bEliminate_Click" Margin="5,10,5,10"/>
-                <Button Name="bReset" Content="Reset" Width="75" Click="bReset_Click" Margin="5,10,5,10"/>
-                <Button Name="bClear" Content="Clear Log" Width="75" Click="bClear_Click" Margin="5,10,5,10"/>
+                <Button Name="bJoin" Content="{Binding Path=JoinLinesButtonText}" Width="75" Click="bJoin_Click" Margin="5,10,5,10" ToolTip="Click on two or more lines of the table to add them together"/>
+                <Button Name="bEqual" Content="Equalize 8" Width="75" Click="bEqual_Click" Margin="5,10,5,10" ToolTip="Move time within the rows so that each workday has at least 8 hours"/>
+                <Button Name="bEliminate" Content="0 Weekend" Width="75" Click="bEliminate_Click" Margin="5,10,5,10" ToolTip="Move time away from weekend days to workdays"/>
+                <Button Name="bReset" Content="Reset" Width="75" Click="bReset_Click" Margin="5,10,5,10" ToolTip="Undo all groupings done on this week's data"/>
+                <Button Name="bClear" Content="Clear Log" Width="75" Click="bClear_Click" Margin="5,10,5,10" ToolTip="Delete contents of the TimeTrack data file"/>
             </StackPanel>
             
             <TextBox Grid.Row="3" Height="70" Text="{Binding Path=SelectedCellDetail}" Margin="5,5,5,5" IsReadOnly="True" VerticalScrollBarVisibility="Auto"/>
@@ -95,6 +96,7 @@
         
         <Grid HorizontalAlignment="Center" VerticalAlignment="Top">
             <Grid.Visibility>
+                <!-- show this grid if there is an error message -->
                 <Binding Path="FileIOError" Converter="{StaticResource VisibleIfError}">
                     <Binding.ConverterParameter>
                         <sys:Boolean>true</sys:Boolean>

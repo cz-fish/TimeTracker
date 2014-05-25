@@ -1,18 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace WeeklyGrinder
 {
@@ -36,19 +25,6 @@ namespace WeeklyGrinder
         {
             var model = DataContext as DataModel;
             model.WeekIndex++;
-        }
-
-        private void DataGrid_AutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
-        {
-            var model = DataContext as DataModel;
-            if (model.CurrentWeekData == null || model.CurrentWeekData.Count < 1)
-                return;
-            e.Column.Header = model.CurrentWeekData[0].GetColumnTitle(e.PropertyDescriptor as PropertyDescriptor);
-
-            if (e.Column.Header.ToString() == "Task")
-                e.Column.Width = new DataGridLength(1, DataGridLengthUnitType.Star);
-            else
-                e.Column.Width = DataGridLength.Auto;
         }
 
         private void bJoin_Click(object sender, RoutedEventArgs e)
@@ -79,15 +55,6 @@ namespace WeeklyGrinder
             model.ClearLog(result == MessageBoxResult.Yes);
         }
 
-        private void gData_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var model = DataContext as DataModel;
-            if (!model.IsJoiningLines)
-                return;
-            if (gData.SelectedIndex != -1)
-                model.JoinLine(gData.SelectedIndex);
-        }
-
         private void bDismissError_Click(object sender, RoutedEventArgs e)
         {
             var model = DataContext as DataModel;
@@ -114,12 +81,43 @@ namespace WeeklyGrinder
             }
         }
 
+        private void gData_AutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
+        {
+            var model = DataContext as DataModel;
+
+            // The week must have at least one task, so that we can query the task objects properties
+            if (model.CurrentWeekData == null || model.CurrentWeekData.Count < 1)
+                return;
+            var task = model.CurrentWeekData[0];
+
+            // Translate the respective property to a name that will be used as the column title and make the
+            // title column stretch across all available horizontal space
+            string propertyName = (e.PropertyDescriptor as PropertyDescriptor).Name;
+            e.Column.Header = task.GetColumnHeader(propertyName);
+            if (task.IsTitleColumn(propertyName))
+                e.Column.Width = new DataGridLength(1, DataGridLengthUnitType.Star);
+            else
+                e.Column.Width = DataGridLength.Auto;
+        }
+
+        private void gData_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var model = DataContext as DataModel;
+            if (!model.IsJoiningLines)
+                return;
+            if (gData.SelectedIndex != -1)
+                model.JoinLine(gData.SelectedIndex);
+        }
+
         private void gData_CurrentCellChanged(object sender, EventArgs e)
         {
             var model = DataContext as DataModel;
 
+            // Update the description detail text box with partial tasks from the selected cell
             if (gData.CurrentCell != null && gData.CurrentCell.Column != null)
             {
+                // We only have information for columns 1 through 7 (days of week)
+                // The -1 skips the 0th column that contains task title and the >6 test eliminates the totals column
                 int col = gData.CurrentCell.Column.DisplayIndex - 1;
                 if (col < 0 || col > 6)
                 {

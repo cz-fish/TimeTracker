@@ -14,8 +14,8 @@ namespace WeeklyGrinder
 {
     class DataModel: INotifyPropertyChanged
     {
-        public readonly string DATA_FILE_PATH;
-        public const string DATA_FILE_NAME = "TimeTrack.txt";
+        public readonly string DataFilePath;
+        public const string DataFileName = "TimeTrack.txt";
         public const decimal DailyMax = 24m;
 
         /// <summary>
@@ -166,7 +166,7 @@ namespace WeeklyGrinder
 
         public DataModel()
         {
-            DATA_FILE_PATH = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.None), DATA_FILE_NAME);
+            DataFilePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.None), DataFileName);
             WeekStartDay = WeekTitleConverter.GetWeekStartDay(DateTime.Now);
 
             new Task(() =>
@@ -188,7 +188,7 @@ namespace WeeklyGrinder
             try
             {
                 int lineno = 0;
-                using (FileStream fs = new FileStream(DATA_FILE_PATH, FileMode.Open))
+                using (FileStream fs = new FileStream(DataFilePath, FileMode.Open))
                 using (StreamReader sr = new StreamReader(fs))
                 {
                     while (!sr.EndOfStream)
@@ -271,7 +271,7 @@ namespace WeeklyGrinder
                     // Create a partial WeekTaskData structure for each task and day
                     .Select(t => new WeekTaskData(t.Key.Value, (t.Key.Key - weekStart).Days, t.Value))
                     // Group partial day records of the same tasks together
-                    .GroupBy(t => t.TaskName, t => t.GetWorkedHours(), (key, days) => new WeekTaskData(weekStart, key, WeekTaskData.Condense(days)))
+                    .GroupBy(t => t.TaskName, t => t.GetWorkedHours(), (key, days) => new WeekTaskData(weekStart, key, WeekTaskData.SumUpDailyHoursOfMultipleTasks(days)))
             );
 
             CurrentWeekData.Add(CalculateTotals());
@@ -285,7 +285,7 @@ namespace WeeklyGrinder
         {
             WeekTaskData totals = new WeekTaskData(WeekStartDay, "Totals", new decimal[7], true);
             foreach (var tsk in CurrentWeekData.Where(t => !t.IsTotals()))
-                totals = totals.MergeLine(tsk, true);
+                totals = totals.MergeOtherLine(tsk, true);
             totals.TaskName = "Totals";
             return totals;
         }
@@ -312,7 +312,7 @@ namespace WeeklyGrinder
 
             // It's not sufficient to just change contents of the element on the m_LineToJoinTo position.
             // To refresh the DataGrid contents, we insert a new row and delete the old two.
-            CurrentWeekData.Insert(m_LineToJoinTo, CurrentWeekData[m_LineToJoinTo].MergeLine(CurrentWeekData[lineNo]));
+            CurrentWeekData.Insert(m_LineToJoinTo, CurrentWeekData[m_LineToJoinTo].MergeOtherLine(CurrentWeekData[lineNo]));
             CurrentWeekData.RemoveAt(m_LineToJoinTo + 1);
             CurrentWeekData.RemoveAt(lineNo);
             // Update the index of the target line, if the deleted line was before it in the list
@@ -332,7 +332,7 @@ namespace WeeklyGrinder
             try
             {
                 // Overwrite the log file with an empty one
-                using (FileStream fs = new FileStream(DATA_FILE_PATH, FileMode.Create))
+                using (FileStream fs = new FileStream(DataFilePath, FileMode.Create))
                 using (StreamWriter sw = new StreamWriter(fs))
                 {
                     if (keepTaskNames)
@@ -364,17 +364,19 @@ namespace WeeklyGrinder
         public bool Equalize8()
         {
             var totalsLine = CurrentWeekData.Where(l => l.IsTotals()).First();
+            // days that we can get some extra time from
             Dictionary<int, decimal> fund = new Dictionary<int, decimal>();
+            // days that are lacking some time to 8 hours
             Dictionary<int, decimal> lacking = new Dictionary<int, decimal>();
-            for (int i = 0; i < 7; i++)
+            for (int day = 0; day < 7; day++)
             {
-                decimal hours = totalsLine.GetWorkedHours()[i];
-                if (i < 5 && hours > 8m)
-                    fund.Add(i, hours - 8m);
-                else if (i < 5 && hours < 8m)
-                    lacking.Add(i, 8m - hours);
-                else if (i >= 5 && hours > 0)
-                    fund.Add(i, hours);
+                decimal hours = totalsLine.GetWorkedHours()[day];
+                if (day < 5 && hours > 8m)
+                    fund.Add(day, hours - 8m);
+                else if (day < 5 && hours < 8m)
+                    lacking.Add(day, 8m - hours);
+                else if (day >= 5 && hours > 0)
+                    fund.Add(day, hours);
             }
 
             if (fund.Values.Sum() < lacking.Values.Sum())
@@ -461,11 +463,12 @@ namespace WeeklyGrinder
         {
             var totalsLine = CurrentWeekData.Where(l => l.IsTotals()).First();
             if (totalsLine.GetWorkedHours().Sum() > 5 * DailyMax)
-                // You work too much! (It's impossible to move all time away from weekend)
+                // It's impossible to move all time away from weekend
                 return false;
 
             var totals = totalsLine.GetWorkedHours();
             if (totals[5] == 0m && totals[6] == 0m)
+                // Already done
                 return true;
 
             for (int i = 0; i < CurrentWeekData.Count; i++)

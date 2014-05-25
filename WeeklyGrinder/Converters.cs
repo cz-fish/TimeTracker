@@ -11,6 +11,9 @@ using System.Windows.Media;
 
 namespace WeeklyGrinder
 {
+    /// <summary>
+    /// Converts one day representing the current week to the text that is at the top of the window
+    /// </summary>
     public class WeekTitleConverter : IValueConverter
     {
         public static DateTime GetWeekStartDay(DateTime weekDay)
@@ -41,6 +44,10 @@ namespace WeeklyGrinder
         }
     }
 
+    /// <summary>
+    /// Converts an error string to Visibility.
+    /// An empty or null string means hidden, unless the boolean parameter 'negate' is set.
+    /// </summary>
     public class VisibleIfError : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -61,6 +68,9 @@ namespace WeeklyGrinder
         }
     }
 
+    /// <summary>
+    /// Converts a week index to boolean. Returns true iff the index is above 0
+    /// </summary>
     public class EnabledIfNotFirst : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -78,6 +88,9 @@ namespace WeeklyGrinder
         }
     }
 
+    /// <summary>
+    /// Converts a week index to boolean. Returns true iff the index (first value) is not the last index in the list of DateTime given in second value
+    /// </summary>
     public class EnabledIfNotLast : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -96,6 +109,10 @@ namespace WeeklyGrinder
         }
     }
 
+    /// <summary>
+    /// Abstract base for converters that set datagrid cell text style based on the cell contents.
+    /// First value is the given DataGridCell. Second value is week task data of the given table row.
+    /// </summary>
     public abstract class CellStyleConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -108,6 +125,7 @@ namespace WeeklyGrinder
 
                 if (index == 8 || data.IsTotals())
                 {
+                    // last column (index == 8) or last row (IsTotals)
                     return GetValueForTotalsCell();
                 }
                 else if (index > 0 && index < 8 && data.GetWorkedHours()[index - 1] == 0.0m)
@@ -128,6 +146,9 @@ namespace WeeklyGrinder
         protected abstract object GetValueForZeroCell();
     }
 
+    /// <summary>
+    /// Determines foreground text color of a datagrid cell
+    /// </summary>
     public class CellForegroundConverter : CellStyleConverter
     {
         protected override object GetValueForTotalsCell()
@@ -141,6 +162,9 @@ namespace WeeklyGrinder
         }
     }
 
+    /// <summary>
+    /// Determines background color of a datagrid cell
+    /// </summary>
     public class CellBackgroundConverter : CellStyleConverter
     {
         protected override object GetValueForTotalsCell()
@@ -154,6 +178,9 @@ namespace WeeklyGrinder
         }
     }
 
+    /// <summary>
+    /// Determines fond style of a datagrid cell
+    /// </summary>
     public class CellFontStyleConverter : CellStyleConverter
     {
         protected override object GetValueForTotalsCell()
